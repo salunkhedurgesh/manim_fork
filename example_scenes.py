@@ -687,7 +687,7 @@ class InteractiveDevelopment(Scene):
         # Press 'q' to stop interacting with the window and go back to
         # typing new commands into the shell.
 
-        # In principle you can customize a scene to be responsive to
+        # In principle, you can customize a scene to be responsive to
         # mouse and keyboard interactions
         always(circle.move_to, self.mouse_point)
 

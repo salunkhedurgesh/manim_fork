@@ -9,7 +9,7 @@ def return_intermediate(point1, point2, c_iter, total_iter):
     return point1 + (point2 - point1) * c_iter / total_iter
 
 
-def min_dettraj(d_list, a_list, alpha_list, point1, point2, total_iter=100, print_val=False, isjaco=False):
+def min_det_traj(d_list, a_list, alpha_list, point1, point2, total_iter=100, print_val=False, isjaco=False):
     det_val_vec = []
     if len(point1) == 6:
         point1f = point1[1:5]

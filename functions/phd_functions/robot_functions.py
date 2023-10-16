@@ -1,7 +1,8 @@
-from manimlib import *
-from functions.maths_functions.maths_phd import *
 import numpy.linalg as la
 import pandas as pd
+
+from functions.maths_functions.maths_phd import *
+from manimlib import *
 
 
 def get_coordinates(d_list, theta_list, a_list, alpha_list, coord_num, intermediate=False, offset=0.0):
@@ -17,7 +18,7 @@ def get_coordinates(d_list, theta_list, a_list, alpha_list, coord_num, intermedi
     return np.matmul(M1, np.array([0, 0, 0, 1]))[0:3] + np.array([0, 0, offset])
 
 
-def get_FrameMatrix(d_list, theta_list, a_list, alpha_list, coord_num=1, intermediate=False, offset=0.0):
+def get_frame_matrix(d_list, theta_list, a_list, alpha_list, coord_num=1, intermediate=False, offset=0.0):
     M1 = np.eye(4, 4)
     for index_i in range(coord_num):
         M1 = np.matmul(np.matmul(M1, z_rotation_matrix(theta_list[index_i])), z_translation_matrix(d_list[index_i]))
@@ -27,7 +28,7 @@ def get_FrameMatrix(d_list, theta_list, a_list, alpha_list, coord_num=1, interme
     return np.matmul(M1, np.array([0, 0, 0, 1]))[0:3] + np.array([0, 0, offset]), M1[0:3, 0:3]
 
 
-def get_RobotLink(p1, p2, link_color=YELLOW_D, radius=0.075, opacity=1.0):
+def get_robot_link(p1, p2, link_color=YELLOW_D, radius=0.075, opacity=1.0):
     if isinstance(p1, list) or isinstance(p2, list):
         p1 = np.array(p1)
         p2 = np.array(p2)
@@ -64,11 +65,11 @@ def get_RobotLink(p1, p2, link_color=YELLOW_D, radius=0.075, opacity=1.0):
     return link.rotate(angle=angle, axis=axis, about_point=link.get_center()).move_to((p1 + p2) / 2)
 
 
-def get_EE(point, radius=0.2, opacity=1.0):
+def get_ee(point, radius=0.2, opacity=1.0):
     return Sphere(radius=radius, opacity=opacity, color=RED_D).move_to(point)
 
 
-def get_RobotJoint(p1, p2, joint_color=RED_D, radius=0.1, opacity=1.0):
+def get_robot_joint(p1, p2, joint_color=RED_D, radius=0.1, opacity=1.0):
     if isinstance(p1, list) or isinstance(p2, list):
         p1 = np.array(p1)
         p2 = np.array(p2)
@@ -102,7 +103,7 @@ def get_RobotJoint(p1, p2, joint_color=RED_D, radius=0.1, opacity=1.0):
     return link.rotate(angle=angle, axis=axis, about_point=link.get_center()).move_to(p1)
 
 
-def get_Frame(origin, R, scale=1.0, thickness=0.02, opacity=1.0):
+def get_frame(origin, R, scale=1.0, thickness=0.02, opacity=1.0):
     if isinstance(origin, list):
         origin = np.array(origin)
     if R.shape[0] == 4:
@@ -118,46 +119,35 @@ def get_Frame(origin, R, scale=1.0, thickness=0.02, opacity=1.0):
     return Group(x_arrow, y_arrow, z_arrow)
 
 
-def get_RobotInstance(d_list, theta_list, a_list, alpha_list, offset=-5.0, link_radius=0.175, joint_radius=0.24,
-                      link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False):
-    coord_vec = []
-    joint_collection = []
-    link_collection = []
+def get_robot_instance(d_list, theta_list, a_list, alpha_list, offset=-5.0, link_radius=0.175, joint_radius=0.24,
+                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False):
+    coord_vec, joint_collection, link_collection = list(), list(), list()
     offset = 2 * joint_radius if offset == 0 else offset
 
     for ri in range(len(d_list) + 1):
         coord_vec.append(get_coordinates(d_list, theta_list, a_list, alpha_list, ri, True, offset=offset))
         if ri > 0:
             jc = RED_D if ri == 1 else joint_color
-            joint_collection.append(get_RobotJoint(coord_vec[-2], coord_vec[-1], joint_color=jc,
-                                                   radius=joint_radius, opacity=opacity))
-            link = get_RobotLink(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
-                                 opacity=opacity)
+            joint_collection.append(get_robot_joint(coord_vec[-2], coord_vec[-1], joint_color=jc,
+                                                    radius=joint_radius, opacity=opacity))
+            link = get_robot_link(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
+                                  opacity=opacity)
             if not isinstance(link, int):
                 link_collection.append(link)
 
-            coord_vec.append(get_coordinates(d_list, theta_list, a_list, alpha_list, ri, False, offset=offset))
-            link = get_RobotLink(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
-                                 opacity=opacity)
-            if not isinstance(link, int):
-                link_collection.append(link)
+    link_group, joint_group = Group(), Group()
+    ee = get_ee(coord_vec[-1], radius=0.3, opacity=opacity)
 
-    link_group = Group()
-    joint_group = Group()
-    link_group.add(link_collection[0])
-    joint_group.add(joint_collection[0])
-    ee = get_EE(coord_vec[-1], radius=0.3, opacity=opacity)
-    ee_point, ee_R = get_FrameMatrix(d_list, theta_list, a_list, alpha_list, 6, offset=offset)
-    if adjust_frame:
-        ee_R = np.matmul(ee_R, x_rotation_matrix(PI)[0:3, 0:3])
-    ee_frame = get_Frame(ee_point, ee_R, thickness=0.03, opacity=opacity)
-
-    for link_i in range(1, len(link_collection)):
-        link_group.add(link_collection[link_i])
-    for joint_i in range(1, len(joint_collection)):
-        joint_group.add(joint_collection[joint_i])
+    for link_i in link_collection:
+        link_group.add(link_i)
+    for joint_i in joint_collection:
+        joint_group.add(joint_i)
 
     if show_frame:
+        ee_point, ee_R = get_frame_matrix(d_list, theta_list, a_list, alpha_list, len(d_list), offset=offset)
+        if adjust_frame:
+            ee_R = np.matmul(ee_R, x_rotation_matrix(PI)[0:3, 0:3])
+        ee_frame = get_frame(ee_point, ee_R, thickness=0.03, opacity=opacity)
         return Group(joint_group, link_group, ee_frame, ee)
     else:
         return Group(joint_group, link_group, ee)
@@ -182,7 +172,7 @@ def get_interpolation_vector(start, end, via_points=None, total_iterations=100, 
         return interpolation_path
 
 
-def adapt_2Pi(in_val):
+def adapt_2_pi(in_val):
     if isinstance(in_val, int) or isinstance(in_val, float):
         if in_val < -PI:
             return in_val + 2 * PI
@@ -215,9 +205,7 @@ def make_paths(df, thresh=0.1):
                 break
             else:
                 elements += 1
-
-            if i2 == 0:
-                path_record.append([0, df.iloc[0, j + 2]])
+            if i2 == 0: path_record.append([0, df.iloc[0, j + 2]])
 
         # if i2 > 50:
         #     print(f"The number of elements are {elements}")
@@ -303,41 +291,41 @@ def make_total_paths():
     path_record = []
     df1 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta1_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df2 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta2_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df3 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta3_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df4 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta4_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df5 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta5_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df6 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta6_8648.csv"),
-                        return_data=True)
+        return_data=True)
 
     df7 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_neg_theta1_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df8 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_neg_theta2_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df9 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_neg_theta3_8648.csv"),
-                        return_data=True)
+        return_data=True)
     df10 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_neg_theta4_8648.csv"),
-                         return_data=True)
+        return_data=True)
     df11 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_neg_theta5_8648.csv"),
-                         return_data=True)
+        return_data=True)
     df12 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_neg_theta6_8648.csv"),
-                         return_data=True)
+        return_data=True)
 
     child_df = pd.DataFrame(columns=['instance', 'IKS', 'theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'theta6'])
     child_df2 = pd.DataFrame(columns=['instance', 'IKS', 'theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'theta6'])
@@ -345,7 +333,6 @@ def make_total_paths():
         for i3 in np.arange(1, 5):
             child_df.loc[len(child_df)] = [i2 + 1, i3, df1.iloc[i2, i3], df2.iloc[i2, i3], df3.iloc[i2, i3],
                                            df4.iloc[i2, i3], df5.iloc[i2, i3], df6.iloc[i2, i3]]
-        for i3 in np.arange(1, 5):
             child_df2.loc[len(child_df2)] = [i2 + 1, i3, df7.iloc[i2, i3], df8.iloc[i2, i3], df9.iloc[i2, i3],
                                              df10.iloc[i2, i3], df11.iloc[i2, i3], df12.iloc[i2, i3]]
 

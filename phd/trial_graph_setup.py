@@ -1,4 +1,5 @@
 from functions.phd_functions.robot_functions import *
+from manimlib import *
 
 
 class CoordinateSystemExample(Scene):
@@ -124,7 +125,6 @@ class PlotSetup(Scene):
     small_plot_size = 4
 
     def construct(self):
-        self.camera.background_rgba = (0, 0, 0)
         plot_joint_space, box_js = get_small_plot(edge=LEFT, label=True)
         # plot_conic_space, box_cs = get_small_plot()
         plot_det_space, box_ds = get_det_plot(value='pos')
@@ -133,8 +133,8 @@ class PlotSetup(Scene):
         critical_values = plot_work_space.get_graph(lambda x: 0.1 * x ** 2 - 3, color=RED, x_range=(-2, 2))
         critical_values2 = plot_det_space.get_graph(lambda x: np.sin(x) + 5, color=GREEN, x_range=(0, 10))
         critical_points = ImplicitFunction(lambda x, y: x * y ** 2 - x ** 2 * y - 2, color=BLUE,
-                                           x_range=(-3.2, 3.2), y_range=(-3.2, 3.2))
-        critical_points.set_width(plot_joint_space.get_width()).move_to(plot_joint_space.get_center())
+                                           x_range=(-3.2, 3.2), y_range=(-3.2, 3.2)).match_plot(plot_joint_space)
+        # critical_points.set_width(plot_joint_space.get_width()).move_to(plot_joint_space.get_center())
 
         self.add(plot_joint_space, plot_det_space, plot_work_space, box_js, box_ds, box_ws)
         self.play(*[ShowCreation(ii) for ii in [critical_points, critical_values, critical_values2]], run_time=5)
@@ -183,17 +183,17 @@ class IcraCheck(ThreeDScene):
         point1_comp = [-3.1201, 0.7082, 1.4904, 2.62, -1.9637, -1.8817]
         point5_comp = [2.4730, 0.0943, 2.0281, -1.4916, -2.4244, 2.4362]
 
-        theta_list = adapt_2Pi(point1_comp)
-        theta_list2 = adapt_2Pi(point5_comp)
+        theta_list = adapt_2_pi(point1_comp)
+        theta_list2 = adapt_2_pi(point5_comp)
 
         det_plot = ImplicitFunction(lambda x, y: x ** 5 - y ** 2, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2))
-        robot = get_RobotInstance(d_list, theta_list, a_list, alpha_list, offset=0)
+        robot = get_robot_instance(d_list, theta_list, a_list, alpha_list, offset=0)
         plane = ParametricSurface(lambda u, v: np.array([u, v, 0]), u_range=(-1, 1), v_range=(-1, 1), color=GREY_E)
         self.add(plane, robot)
         total_iterations = 10
         for ii in range(total_iterations):
             interpolated_theta_list = get_interpolation(theta_list, theta_list2, ii, total_iterations)
-            self.play(Transform(robot, get_RobotInstance(d_list, interpolated_theta_list, a_list,
-                                                         alpha_list, offset=0, show_frame=True)), run_time=0.05)
+            self.play(Transform(robot, get_robot_instance(d_list, interpolated_theta_list, a_list,
+                                                          alpha_list, offset=0, show_frame=True)), run_time=0.05)
 
         # self.embed()

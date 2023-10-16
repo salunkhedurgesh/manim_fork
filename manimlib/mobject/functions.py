@@ -16,14 +16,14 @@ if TYPE_CHECKING:
 
 class ParametricCurve(VMobject):
     def __init__(
-        self,
-        t_func: Callable[[float], Sequence[float] | Vect3],
-        t_range: Tuple[float, float, float] = (0, 1, 0.1),
-        epsilon: float = 1e-8,
-        # TODO, automatically figure out discontinuities
-        discontinuities: Sequence[float] = [],
-        use_smoothing: bool = True,
-        **kwargs
+            self,
+            t_func: Callable[[float], Sequence[float] | Vect3],
+            t_range: Tuple[float, float, float] = (0, 1, 0.1),
+            epsilon: float = 1e-8,
+            # TODO, automatically figure out discontinuities
+            discontinuities: Sequence[float] = [],
+            use_smoothing: bool = True,
+            **kwargs
     ):
         self.t_func = t_func
         self.t_range = t_range
@@ -69,11 +69,11 @@ class ParametricCurve(VMobject):
 
 class FunctionGraph(ParametricCurve):
     def __init__(
-        self,
-        function: Callable[[float], float],
-        x_range: Tuple[float, float, float] = (-8, 8, 0.25),
-        color: ManimColor = YELLOW,
-        **kwargs
+            self,
+            function: Callable[[float], float],
+            x_range: Tuple[float, float, float] = (-8, 8, 0.25),
+            color: ManimColor = YELLOW,
+            **kwargs
     ):
         self.function = function
         self.x_range = x_range
@@ -86,15 +86,15 @@ class FunctionGraph(ParametricCurve):
 
 class ImplicitFunction(VMobject):
     def __init__(
-        self,
-        func: Callable[[float, float], float],
-        x_range: Tuple[float, float] = (-FRAME_X_RADIUS, FRAME_X_RADIUS),
-        y_range: Tuple[float, float] = (-FRAME_Y_RADIUS, FRAME_Y_RADIUS),
-        min_depth: int = 5,
-        max_quads: int = 1500,
-        use_smoothing: bool = False,
-        joint_type: str = 'no_joint',
-        **kwargs
+            self,
+            func: Callable[[float, float], float],
+            x_range: Tuple[float, float] = (-FRAME_X_RADIUS, FRAME_X_RADIUS),
+            y_range: Tuple[float, float] = (-FRAME_Y_RADIUS, FRAME_Y_RADIUS),
+            min_depth: int = 5,
+            max_quads: int = 1500,
+            use_smoothing: bool = False,
+            joint_type: str = 'no_joint',
+            **kwargs
     ):
         super().__init__(joint_type=joint_type, **kwargs)
 
@@ -119,3 +119,9 @@ class ImplicitFunction(VMobject):
             self.add_points_as_corners(curve[1:])
         if use_smoothing:
             self.make_smooth()
+
+    def match_plot(self, in_obj: VMobject):
+        return self.set_shape(width=in_obj.get_width(), height=in_obj.get_height()).move_to(in_obj.get_center())
+
+    def check_func(self):
+        print(f"Checking method additions: {self.get_center()}")
