@@ -150,3 +150,12 @@ dmypy.json
 # For manim
 /videos
 /custom_config.yml
+*_assets
+*.mp4
+*.dvi
+*.aux
+*.tex
+*partial_movie_files
+*.pptx
+*.json
+*.html
