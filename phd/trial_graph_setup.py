@@ -1,4 +1,8 @@
+import numpy as np
+
 from functions.phd_functions.robot_functions import *
+from functions.phd_functions.maple_functions import *
+from functions.phd_functions.robots_3r import *
 from manimlib import *
 
 
@@ -76,68 +80,71 @@ class PlotSetup_old(Scene):
         return plot_to_return, box
 
 
-def get_small_plot(edge=None, label=False):
-    plot_to_return = Axes(
-        x_range=(-3, 3),
-        y_range=(-3, 3),
-        y_axis_config=dict(stroke_width=0.001, opacity=0, include_ticks=False, stroke_color=BLACK),
-        x_axis_config=dict(include_ticks=False),
-    )
-    height = PlotSetup.small_plot_size
-    width = height
-    plot_to_return.set_height(height)
-    plot_to_return.set_width(PlotSetup.small_plot_size)
-    shift_buff = 0.85
-    if edge is not None:
-        plot_to_return.to_edge(edge, buff=SMALL_BUFF * 2)
-    box = SurroundingRectangle(plot_to_return, stroke_width=1, buff=0)
-    top_right = TexText(r"""$(\pi, \pi)$""""").move_to(plot_to_return.get_center()).scale(0.6)
-    bottom_left = TexText(r"""(-$\pi$, -$\pi$)""""").move_to(plot_to_return.get_center()).scale(0.6)
-    top_right.shift(np.array([width * shift_buff / 2, height * 1.1 / 2, 0]))
-    bottom_left.shift(np.array([-width * shift_buff / 2, -height * 1.1 / 2, 0]))
-    second_element = Group(box, top_right, bottom_left) if label else box
-    return plot_to_return, second_element
-
-
-def get_det_plot(edge=None, value=None):
-    if value is None:
-        y_range = (-5, 5)
-    elif value == 'pos':
-        y_range = (-1, 10)
-    else:
-        y_range = (-10, 1)
-
-    plot_to_return = Axes(
-        x_range=(-1, 10),
-        y_range=y_range,
-        x_axis_config=dict(include_ticks=False),
-    )
-    plot_to_return.set_height(PlotSetup.small_plot_size)
-    plot_to_return.set_width(PlotSetup.small_plot_size)
-    if edge is not None:
-        plot_to_return.to_edge(edge, buff=SMALL_BUFF * 2)
-    box = SurroundingRectangle(plot_to_return, stroke_width=1, buff=0)
-
-    return plot_to_return, box
-
-
 class PlotSetup(Scene):
-    small_plot_size = 4
 
     def construct(self):
+        theta_list = get_interpolation([-3, -0.5], [-0.742, 2.628], 0, 50)
+        ee = get_fkin(theta_list, [0, 1, 0], [1, 2, 1.5], [-PI / 2, PI / 2, 0])
+        rho = np.sqrt(ee[0] ** 2 + ee[1] ** 2)
+        z = ee[2]
+        R = ee[0] ** 2 + ee[1] ** 2 + ee[2] ** 2
+
         plot_joint_space, box_js = get_small_plot(edge=LEFT, label=True)
         # plot_conic_space, box_cs = get_small_plot()
-        plot_det_space, box_ds = get_det_plot(value='pos')
-        plot_work_space, box_ws = get_small_plot(edge=RIGHT, label=False)
+        # plot_det_space, box_ds = get_det_plot(value='pos')
+        plot_conic_space, box_cs = get_small_plot(label=False)
+        plot_work_space, box_ws = get_small_plot(edge=RIGHT, label=False, xvalue=(0, 6), yvalue=(-4, 4))
 
+        print(get_conic(robot_type="philippe", k_R=R, z=z))
+        # self.embed()
         critical_values = plot_work_space.get_graph(lambda x: 0.1 * x ** 2 - 3, color=RED, x_range=(-2, 2))
-        critical_values2 = plot_det_space.get_graph(lambda x: np.sin(x) + 5, color=GREEN, x_range=(0, 10))
-        critical_points = ImplicitFunction(lambda x, y: x * y ** 2 - x ** 2 * y - 2, color=BLUE,
-                                           x_range=(-3.2, 3.2), y_range=(-3.2, 3.2)).match_plot(plot_joint_space)
-        # critical_points.set_width(plot_joint_space.get_width()).move_to(plot_joint_space.get_center())
+        rval = 2
 
-        self.add(plot_joint_space, plot_det_space, plot_work_space, box_js, box_ds, box_ws)
-        self.play(*[ShowCreation(ii) for ii in [critical_points, critical_values, critical_values2]], run_time=5)
+        conic_plot = ImplicitFunction(get_conic(k_R=R, z=z, robot_type="philippe"), color=GREEN, x_range=(-rval, rval),
+                                      y_range=(-rval, rval))
+        critical_points = ImplicitFunction(
+            lambda t2, t3: 4.5 * sin(t3) * cos(t2) * cos(t3) + 6.0 * sin(t3) * cos(t2) + 2.25 * sin(t3) * cos(
+                t3) + 3.0 * sin(t3) - 2.25 * cos(t2) * cos(t3) ** 2 - 3.0 * cos(t2) * cos(t3), color=BLUE,
+            x_range=(-3.2, 3.2), y_range=(-3.2, 3.2))
+        critical_value = ImplicitFunction(lambda x, y: 65536 * x ** 16 + 524288 * y ** 2 * x ** 14 + 1835008 * y ** 4 * x ** 12 + 3670016 * y ** 6 * x ** 10 + 4587520 * y ** 8 * x ** 8 + 3670016 * y ** 10 * x ** 6 + 1835008 * y ** 12 * x ** 4 + 524288 * y ** 14 * x ** 2 + 65536 * y ** 16 - 2228224 * x ** 14 - 16121856 * y ** 2 * x ** 12 - 49938432 * y ** 4 * x ** 10 - 85852160 * y ** 6 * x ** 8 - 88473600 * y ** 8 * x ** 6 - 54657024 * y ** 10 * x ** 4 - 18743296 * y ** 12 * x ** 2 - 2752512 * y ** 14 + 20692992 * x ** 12 + 133332992 * y ** 2 * x ** 10 + 369901568 * y ** 4 * x ** 8 + 560136192 * y ** 6 * x ** 6 + 483934208 * y ** 8 * x ** 4 + 224559104 * y ** 10 * x ** 2 + 43499520 * y ** 12 - 82698240 * x ** 10 - 98885632 * y ** 2 * x ** 8 - 253280256 * y ** 4 * x ** 6 - 842514432 * y ** 6 * x ** 4 - 907239424 * y ** 8 * x ** 2 - 301817856 * y ** 10 + 305178112 * x ** 8 - 2765285376 * y ** 2 * x ** 6 - 3004079104 * y ** 4 * x ** 4 + 480122880 * y ** 6 * x ** 2 + 749282816 * y ** 8 - 714739200 * x ** 6 + 7322492416 * y ** 2 * x ** 4 - 6911564288 * y ** 4 * x ** 2 + 160135680 * y ** 6 + 1117824960 * x ** 4 + 964516736 * y ** 2 * x ** 2 + 195134400 * y ** 4 - 1675600160 * x ** 2 + 99657312 * y ** 2 + 12271009,
+                                          color=BLUE, x_range=(0, 6), y_range=(-4, 4))
+
+        critical_value.stretch(2 / 3, 0).stretch(5.33 / 8, 1).move_to(
+            plot_work_space.get_origin() + RIGHT * critical_value.get_width() / 2)
+        circle = Circle(radius=2 / rval)
+        self.add(circle)
+        self.add(critical_value)
+
+        self.add(Dot().move_to(plot_work_space.get_origin()))
+        dots_workspace = Group()
+        vector_theta_list = []
+
+        joint_dot = Dot(fill_color=PURPLE).move_to(plot_joint_space.c2p(theta_list[0], theta_list[1]))
+        work_dot = Dot(fill_color=RED_D).move_to(plot_work_space.c2p(rho, z))
+        self.add(TracedPath(joint_dot.get_center, stroke_width=2, stroke_color=GOLD_E).fix_in_frame())
+        self.add(TracedPath(work_dot.get_center, stroke_width=2, stroke_color=GOLD_E).fix_in_frame())
+        self.add(plot_joint_space, plot_conic_space, plot_work_space, box_js, box_cs, box_ws)
+        self.play(*[ShowCreation(ii) for ii in
+                    [critical_points.match_plot(plot_joint_space), critical_value, conic_plot]], run_time=5)
+
+        for citer in range(51):
+            if len(vector_theta_list) == 0:
+                vector_theta_list.append(get_interpolation([-3, -0.5], [-0.742, 2.628], 0, 50))
+            theta_list = get_interpolation([-3, -0.5], [-0.742, 2.628], citer, 50)
+            vector_theta_list.append(theta_list)
+            ee = get_fkin(theta_list, [0, 1, 0], [1, 2, 1.5], [-PI / 2, PI / 2, 0])
+            rho = np.sqrt(ee[0] ** 2 + ee[1] ** 2)
+            z = ee[2]
+            R = ee[0] ** 2 + ee[1] ** 2 + ee[2] ** 2
+            print(rho, z)
+            new_conic_plot = ImplicitFunction(get_conic(k_R=R, z=z, robot_type="philippe"), color=GREEN,
+                                              x_range=(-rval, rval), y_range=(-rval, rval))
+            dots_workspace.add(Dot(color=BLUE, opacity=1).move_to(np.array([rho, z, 0])))
+            self.play(*[Transform(item, item.move_to(plane.c2p(p[0], p[1])), run_time=0.05) for item, plane, p in
+                        zip([joint_dot, work_dot], [plot_joint_space, plot_work_space], [theta_list, [rho, z]])])
+            self.play(*[FadeOut(conic_plot), FadeIn(new_conic_plot)], run_time=0.05)
+            conic_plot = new_conic_plot
+        self.wait(2)
         self.embed()
 
 
