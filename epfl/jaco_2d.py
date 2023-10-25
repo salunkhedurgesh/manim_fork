@@ -1,8 +1,7 @@
-from functions.phd_functions.robot_functions import *
 from functions.phd_functions.functions_epfl import *
+from functions.phd_functions.robots_3r import *
+
 from manimlib import *
-from manim_slides.slide import Slide, ThreeDSlide
-import pandas as pd
 
 
 class JacDetPlot(ThreeDScene):
@@ -95,7 +94,7 @@ class JacDetPlot(ThreeDScene):
         self.add(back_plane, line_y_offset)
         self.FadeInFadeOut(jac_cusp, jac_cusp1)
         self.FadeInFadeOut(title)
-        self.add(TracedPath(det_point.get_center, stroke_width=8, stroke_color=LIGHT_BROWN).fix_in_frame())
+        self.add(TracedPath(det_point.get_center, stroke_width=6, stroke_color=LIGHT_BROWN).fix_in_frame())
         print("Animating frame orientation, scale and position...\n")
         self.play(frame.animate.set_euler_angles(1.6, 1.15, 0).scale(1.6).shift(np.array([-3.5, -3.5, 2])),
                   run_time=2)
@@ -103,13 +102,13 @@ class JacDetPlot(ThreeDScene):
         ee_trace_2d = Group()
         ee_point, ee_R = get_frame_matrix(theta_list=point_record[0], coord_num=6, offset=0.48, robot_type="jaco")
         ee_point_vec = [ee_point]
-        path_iter = 300
+        path_iter = 100
         for k in range(path_iter + 2):
             k = min(k, path_iter)
             self.play(ReplacementTransform(det_point,
                                            det_point.move_to(
                                                back_plane.c2p(k * 50 / path_iter, my_det6R(start_index, end_index, cur_iter=k,
-                                                                          total_iter=path_iter)))), run_time=0.02)
+                                                                          total_iter=path_iter)))), run_time=0.05)
             inter_theta = get_interpolation(point_record[0], point_record[4], k, path_iter)
             self.play(Transform(rob_ins, get_robot_instance(theta_list=inter_theta, offset=0, robot_type="jaco")), run_time=0.02)
 

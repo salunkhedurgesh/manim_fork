@@ -1,7 +1,3 @@
-import numpy as np
-
-from functions.phd_functions.robot_functions import *
-from functions.phd_functions.maple_functions import *
 from functions.phd_functions.robots_3r import *
 from manimlib import *
 
@@ -95,12 +91,11 @@ class PlotSetup(Scene):
         plot_conic_space, box_cs = get_small_plot(label=False)
         plot_work_space, box_ws = get_small_plot(edge=RIGHT, label=False, xvalue=(0, 6), yvalue=(-4, 4))
 
-        print(get_conic(robot_type="philippe", k_R=R, z=z))
+        print(get_conic(robot_type="philippe", k_R=R, k_z=z))
         # self.embed()
         critical_values = plot_work_space.get_graph(lambda x: 0.1 * x ** 2 - 3, color=RED, x_range=(-2, 2))
         rval = 2
-
-        conic_plot = ImplicitFunction(get_conic(k_R=R, z=z, robot_type="philippe"), color=GREEN, x_range=(-rval, rval),
+        conic_plot = ImplicitFunction(get_conic(k_R=R, k_z=z, robot_type="philippe"), color=GREEN, x_range=(-rval, rval),
                                       y_range=(-rval, rval))
         critical_points = ImplicitFunction(
             lambda t2, t3: 4.5 * sin(t3) * cos(t2) * cos(t3) + 6.0 * sin(t3) * cos(t2) + 2.25 * sin(t3) * cos(

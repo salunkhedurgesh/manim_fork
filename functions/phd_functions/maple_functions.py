@@ -2,6 +2,7 @@ import numpy as np
 import sympy as sym
 from numpy import cos, sin
 from numpy import pi as Pi
+from numpy import pi as PI
 from sympy import solve
 
 
@@ -210,6 +211,191 @@ def jac3R(theta_list, d_list, a_list, alpha_list):
     s3 = np.sin(theta3)
     c3 = np.cos(theta3)
 
-    det = a3*(c3*s3**2*((np.power(cos(alpha1),  3)*cos(alpha2)**2*sin(alpha2)*a3**2 + cos(alpha1)*cos(alpha2)**2*sin(alpha1)**2*sin(alpha2)*a3**2 + np.power(cos(alpha1),  3)*sin(alpha2)*a3**2 - cos(alpha1)*cos(alpha2)**2*sin(alpha2)*a3**2 + cos(alpha1)*sin(alpha1)**2*sin(alpha2)*a3**2 - cos(alpha1)*sin(alpha2)*a3**2)*s2*c2 + (-cos(alpha1)**2*cos(alpha2)*sin(alpha1)*sin(alpha2)**2*a3**2 - cos(alpha2)*np.power(sin(alpha1),  3)*sin(alpha2)**2*a3**2 - np.power(cos(alpha2),  3)*sin(alpha1)*a3**2 + cos(alpha2)*sin(alpha1)*a3**2)*s2) + c3*s3*((-2*np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)**2*a3*d3 - 2*cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)**2*a3*d3 + 2*cos(alpha1)*cos(alpha2)*sin(alpha2)**2*a3*d3)*c2*s2 + (cos(alpha1)**2*sin(alpha1)*sin(alpha2)**2*a2*a3 + np.power(sin(alpha1),  3)*sin(alpha2)**2*a2*a3 + cos(alpha1)*cos(alpha2)*sin(alpha2)*a1*a3 + cos(alpha2)**2*sin(alpha1)*a2*a3 - 2*sin(alpha1)*a2*a3)*c2 + (2*np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)*a2*a3 + 2*cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)*a2*a3 - 2*cos(alpha1)*cos(alpha2)*sin(alpha2)*a2*a3)*s2**2 + (-cos(alpha1)**2*cos(alpha2)**2*sin(alpha1)*sin(alpha2)*a3*d3 + cos(alpha1)**2*sin(alpha1)*np.power(sin(alpha2),  3)*a3*d3 - cos(alpha2)**2*np.power(sin(alpha1),  3)*sin(alpha2)*a3*d3 + np.power(sin(alpha1),  3)*np.power(sin(alpha2),  3)*a3*d3 - cos(alpha1)**2*cos(alpha2)*sin(alpha1)*sin(alpha2)*a3*d2 - cos(alpha2)*np.power(sin(alpha1),  3)*sin(alpha2)*a3*d2 + 2*cos(alpha2)**2*sin(alpha1)*sin(alpha2)*a3*d3 - sin(alpha1)*sin(alpha2)*a3*d3)*s2 - np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)*a2*a3 - cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)*a2*a3 + cos(alpha1)*cos(alpha2)*sin(alpha2)*a2*a3 + cos(alpha2)**2*sin(alpha1)*a1*a3 - sin(alpha1)*a1*a3) + c3*((np.power(cos(alpha1),  3)*np.power(sin(alpha2),  3)*d3**2 + cos(alpha1)*sin(alpha1)**2*np.power(sin(alpha2),  3)*d3**2 - np.power(cos(alpha1),  3)*sin(alpha2)*a2**2 - np.power(cos(alpha1),  3)*sin(alpha2)*a3**2 - cos(alpha1)*sin(alpha1)**2*sin(alpha2)*a2**2 - cos(alpha1)*sin(alpha1)**2*sin(alpha2)*a3**2 - cos(alpha1)*np.power(sin(alpha2),  3)*d3**2 + cos(alpha1)*sin(alpha2)*a2**2 + cos(alpha1)*sin(alpha2)*a3**2)*c2*s2 + (cos(alpha1)**2*cos(alpha2)*sin(alpha1)*sin(alpha2)*a2*d3 + cos(alpha2)*np.power(sin(alpha1),  3)*sin(alpha2)*a2*d3 + cos(alpha1)**2*sin(alpha1)*sin(alpha2)*a2*d2 + np.power(sin(alpha1),  3)*sin(alpha2)*a2*d2 - cos(alpha1)*sin(alpha2)**2*a1*d3 - cos(alpha2)*sin(alpha1)*sin(alpha2)*a2*d3)*c2 + (-2*np.power(cos(alpha1),  3)*sin(alpha2)**2*a2*d3 - 2*cos(alpha1)*sin(alpha1)**2*sin(alpha2)**2*a2*d3 + 2*cos(alpha1)*sin(alpha2)**2*a2*d3)*s2**2 + (cos(alpha1)**2*cos(alpha2)*sin(alpha1)*sin(alpha2)**2*d3**2 + cos(alpha2)*np.power(sin(alpha1),  3)*sin(alpha2)**2*d3**2 + cos(alpha1)**2*sin(alpha1)*sin(alpha2)**2*d2*d3 + np.power(sin(alpha1),  3)*sin(alpha2)**2*d2*d3 - cos(alpha2)*sin(alpha1)*sin(alpha2)**2*d3**2 + cos(alpha1)*sin(alpha2)*a1*a2)*s2 + np.power(cos(alpha1),  3)*sin(alpha2)**2*a2*d3 + cos(alpha1)*sin(alpha1)**2*sin(alpha2)**2*a2*d3 - cos(alpha1)*sin(alpha2)**2*a2*d3 - cos(alpha2)*sin(alpha1)*sin(alpha2)*a1*d3) + np.power(s3,3)*((-cos(alpha1)**2*sin(alpha1)*sin(alpha2)**2*a3**2 - np.power(sin(alpha1),  3)*sin(alpha2)**2*a3**2 - cos(alpha2)**2*sin(alpha1)*a3**2 + sin(alpha1)*a3**2)*c2 + (-2*np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)*a3**2 - 2*cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)*a3**2 + 2*cos(alpha1)*cos(alpha2)*sin(alpha2)*a3**2)*s2**2 + np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)*a3**2 + cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)*a3**2 - cos(alpha1)*cos(alpha2)*sin(alpha2)*a3**2) + s3**2*((2*np.power(cos(alpha1),  3)*sin(alpha2)*a2*a3 + 2*cos(alpha1)*sin(alpha1)**2*sin(alpha2)*a2*a3 - 2*cos(alpha1)*sin(alpha2)*a2*a3)*c2*s2 + (-cos(alpha1)**2*cos(alpha2)*sin(alpha1)*sin(alpha2)*a3*d3 - cos(alpha2)*np.power(sin(alpha1),  3)*sin(alpha2)*a3*d3 - cos(alpha1)**2*sin(alpha1)*sin(alpha2)*a3*d2 - np.power(sin(alpha1),  3)*sin(alpha2)*a3*d2 + cos(alpha2)*sin(alpha1)*sin(alpha2)*a3*d3)*c2 + (2*np.power(cos(alpha1),  3)*sin(alpha2)**2*a3*d3 + 2*cos(alpha1)*sin(alpha1)**2*sin(alpha2)**2*a3*d3 - 2*cos(alpha1)*sin(alpha2)**2*a3*d3)*s2**2 + (-cos(alpha1)*sin(alpha2)*a1*a3 + cos(alpha2)*sin(alpha1)*a2*a3)*s2 - np.power(cos(alpha1),  3)*sin(alpha2)**2*a3*d3 - cos(alpha1)*sin(alpha1)**2*sin(alpha2)**2*a3*d3 + cos(alpha1)*sin(alpha2)**2*a3*d3) + s3*((cos(alpha1)**2*sin(alpha1)*sin(alpha2)**2*a3**2 + np.power(sin(alpha1),  3)*sin(alpha2)**2*a3**2 + cos(alpha2)**2*sin(alpha1)*a3**2 - sin(alpha1)*a2**2 - sin(alpha1)*a3**2)*c2 + (2*np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)*a3**2 + 2*cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)*a3**2 - 2*cos(alpha1)*cos(alpha2)*sin(alpha2)*a3**2)*s2**2 - sin(alpha1)*sin(alpha2)*a2*d3*s2 - np.power(cos(alpha1),  3)*cos(alpha2)*sin(alpha2)*a3**2 - cos(alpha1)*cos(alpha2)*sin(alpha1)**2*sin(alpha2)*a3**2 + cos(alpha1)*cos(alpha2)*sin(alpha2)*a3**2 - sin(alpha1)*a1*a2) + (-2*np.power(cos(alpha1),  3)*sin(alpha2)*a2*a3 - 2*cos(alpha1)*sin(alpha1)**2*sin(alpha2)*a2*a3 + 2*cos(alpha1)*sin(alpha2)*a2*a3)*c2*s2 + (cos(alpha1)**2*cos(alpha2)*sin(alpha1)*sin(alpha2)*a3*d3 + cos(alpha2)*np.power(sin(alpha1),  3)*sin(alpha2)*a3*d3 + cos(alpha1)**2*sin(alpha1)*sin(alpha2)*a3*d2 + np.power(sin(alpha1),  3)*sin(alpha2)*a3*d2 - cos(alpha2)*sin(alpha1)*sin(alpha2)*a3*d3)*c2 + (-2*np.power(cos(alpha1),  3)*sin(alpha2)**2*a3*d3 - 2*cos(alpha1)*sin(alpha1)**2*sin(alpha2)**2*a3*d3 + 2*cos(alpha1)*sin(alpha2)**2*a3*d3)*s2**2 + cos(alpha1)*sin(alpha2)*a1*a3*s2 + np.power(cos(alpha1),  3)*sin(alpha2)**2*a3*d3 + cos(alpha1)*sin(alpha1)**2*sin(alpha2)**2*a3*d3 - cos(alpha1)*sin(alpha2)**2*a3*d3)
+    det = a3 * (c3 * s3 ** 2 * ((np.power(cos(alpha1), 3) * cos(alpha2) ** 2 * sin(alpha2) * a3 ** 2 + cos(
+        alpha1) * cos(alpha2) ** 2 * sin(alpha1) ** 2 * sin(alpha2) * a3 ** 2 + np.power(cos(alpha1), 3) * sin(
+        alpha2) * a3 ** 2 - cos(alpha1) * cos(alpha2) ** 2 * sin(alpha2) * a3 ** 2 + cos(alpha1) * sin(
+        alpha1) ** 2 * sin(alpha2) * a3 ** 2 - cos(alpha1) * sin(alpha2) * a3 ** 2) * s2 * c2 + (
+                                            -cos(alpha1) ** 2 * cos(alpha2) * sin(alpha1) * sin(
+                                        alpha2) ** 2 * a3 ** 2 - cos(alpha2) * np.power(sin(alpha1), 3) * sin(
+                                        alpha2) ** 2 * a3 ** 2 - np.power(cos(alpha2), 3) * sin(alpha1) * a3 ** 2 + cos(
+                                        alpha2) * sin(alpha1) * a3 ** 2) * s2) + c3 * s3 * ((-2 * np.power(cos(alpha1),
+                                                                                                           3) * cos(
+        alpha2) * sin(alpha2) ** 2 * a3 * d3 - 2 * cos(alpha1) * cos(alpha2) * sin(alpha1) ** 2 * sin(
+        alpha2) ** 2 * a3 * d3 + 2 * cos(alpha1) * cos(alpha2) * sin(alpha2) ** 2 * a3 * d3) * c2 * s2 + (
+                                                                                                        cos(alpha1) ** 2 * sin(
+                                                                                                    alpha1) * sin(
+                                                                                                    alpha2) ** 2 * a2 * a3 + np.power(
+                                                                                                    sin(alpha1),
+                                                                                                    3) * sin(
+                                                                                                    alpha2) ** 2 * a2 * a3 + cos(
+                                                                                                    alpha1) * cos(
+                                                                                                    alpha2) * sin(
+                                                                                                    alpha2) * a1 * a3 + cos(
+                                                                                                    alpha2) ** 2 * sin(
+                                                                                                    alpha1) * a2 * a3 - 2 * sin(
+                                                                                                    alpha1) * a2 * a3) * c2 + (
+                                                                                                        2 * np.power(
+                                                                                                    cos(alpha1),
+                                                                                                    3) * cos(
+                                                                                                    alpha2) * sin(
+                                                                                                    alpha2) * a2 * a3 + 2 * cos(
+                                                                                                    alpha1) * cos(
+                                                                                                    alpha2) * sin(
+                                                                                                    alpha1) ** 2 * sin(
+                                                                                                    alpha2) * a2 * a3 - 2 * cos(
+                                                                                                    alpha1) * cos(
+                                                                                                    alpha2) * sin(
+                                                                                                    alpha2) * a2 * a3) * s2 ** 2 + (
+                                                                                                        -cos(
+                                                                                                            alpha1) ** 2 * cos(
+                                                                                                    alpha2) ** 2 * sin(
+                                                                                                    alpha1) * sin(
+                                                                                                    alpha2) * a3 * d3 + cos(
+                                                                                                    alpha1) ** 2 * sin(
+                                                                                                    alpha1) * np.power(
+                                                                                                    sin(alpha2),
+                                                                                                    3) * a3 * d3 - cos(
+                                                                                                    alpha2) ** 2 * np.power(
+                                                                                                    sin(alpha1),
+                                                                                                    3) * sin(
+                                                                                                    alpha2) * a3 * d3 + np.power(
+                                                                                                    sin(alpha1),
+                                                                                                    3) * np.power(
+                                                                                                    sin(alpha2),
+                                                                                                    3) * a3 * d3 - cos(
+                                                                                                    alpha1) ** 2 * cos(
+                                                                                                    alpha2) * sin(
+                                                                                                    alpha1) * sin(
+                                                                                                    alpha2) * a3 * d2 - cos(
+                                                                                                    alpha2) * np.power(
+                                                                                                    sin(alpha1),
+                                                                                                    3) * sin(
+                                                                                                    alpha2) * a3 * d2 + 2 * cos(
+                                                                                                    alpha2) ** 2 * sin(
+                                                                                                    alpha1) * sin(
+                                                                                                    alpha2) * a3 * d3 - sin(
+                                                                                                    alpha1) * sin(
+                                                                                                    alpha2) * a3 * d3) * s2 - np.power(
+        cos(alpha1), 3) * cos(alpha2) * sin(alpha2) * a2 * a3 - cos(alpha1) * cos(alpha2) * sin(alpha1) ** 2 * sin(
+        alpha2) * a2 * a3 + cos(alpha1) * cos(alpha2) * sin(alpha2) * a2 * a3 + cos(alpha2) ** 2 * sin(
+        alpha1) * a1 * a3 - sin(alpha1) * a1 * a3) + c3 * ((np.power(cos(alpha1), 3) * np.power(sin(alpha2),
+                                                                                                3) * d3 ** 2 + cos(
+        alpha1) * sin(alpha1) ** 2 * np.power(sin(alpha2), 3) * d3 ** 2 - np.power(cos(alpha1), 3) * sin(
+        alpha2) * a2 ** 2 - np.power(cos(alpha1), 3) * sin(alpha2) * a3 ** 2 - cos(alpha1) * sin(alpha1) ** 2 * sin(
+        alpha2) * a2 ** 2 - cos(alpha1) * sin(alpha1) ** 2 * sin(alpha2) * a3 ** 2 - cos(alpha1) * np.power(sin(alpha2),
+                                                                                                            3) * d3 ** 2 + cos(
+        alpha1) * sin(alpha2) * a2 ** 2 + cos(alpha1) * sin(alpha2) * a3 ** 2) * c2 * s2 + (
+                                                                       cos(alpha1) ** 2 * cos(alpha2) * sin(
+                                                                   alpha1) * sin(alpha2) * a2 * d3 + cos(
+                                                                   alpha2) * np.power(sin(alpha1), 3) * sin(
+                                                                   alpha2) * a2 * d3 + cos(alpha1) ** 2 * sin(
+                                                                   alpha1) * sin(alpha2) * a2 * d2 + np.power(
+                                                                   sin(alpha1), 3) * sin(alpha2) * a2 * d2 - cos(
+                                                                   alpha1) * sin(alpha2) ** 2 * a1 * d3 - cos(
+                                                                   alpha2) * sin(alpha1) * sin(
+                                                                   alpha2) * a2 * d3) * c2 + (
+                                                                       -2 * np.power(cos(alpha1), 3) * sin(
+                                                                   alpha2) ** 2 * a2 * d3 - 2 * cos(alpha1) * sin(
+                                                                   alpha1) ** 2 * sin(alpha2) ** 2 * a2 * d3 + 2 * cos(
+                                                                   alpha1) * sin(alpha2) ** 2 * a2 * d3) * s2 ** 2 + (
+                                                                       cos(alpha1) ** 2 * cos(alpha2) * sin(
+                                                                   alpha1) * sin(alpha2) ** 2 * d3 ** 2 + cos(
+                                                                   alpha2) * np.power(sin(alpha1), 3) * sin(
+                                                                   alpha2) ** 2 * d3 ** 2 + cos(alpha1) ** 2 * sin(
+                                                                   alpha1) * sin(alpha2) ** 2 * d2 * d3 + np.power(
+                                                                   sin(alpha1), 3) * sin(alpha2) ** 2 * d2 * d3 - cos(
+                                                                   alpha2) * sin(alpha1) * sin(
+                                                                   alpha2) ** 2 * d3 ** 2 + cos(alpha1) * sin(
+                                                                   alpha2) * a1 * a2) * s2 + np.power(cos(alpha1),
+                                                                                                      3) * sin(
+        alpha2) ** 2 * a2 * d3 + cos(alpha1) * sin(alpha1) ** 2 * sin(alpha2) ** 2 * a2 * d3 - cos(alpha1) * sin(
+        alpha2) ** 2 * a2 * d3 - cos(alpha2) * sin(alpha1) * sin(alpha2) * a1 * d3) + np.power(s3, 3) * ((-cos(
+        alpha1) ** 2 * sin(alpha1) * sin(alpha2) ** 2 * a3 ** 2 - np.power(sin(alpha1), 3) * sin(
+        alpha2) ** 2 * a3 ** 2 - cos(alpha2) ** 2 * sin(alpha1) * a3 ** 2 + sin(alpha1) * a3 ** 2) * c2 + (
+                                                                                                                     -2 * np.power(
+                                                                                                                 cos(alpha1),
+                                                                                                                 3) * cos(
+                                                                                                                 alpha2) * sin(
+                                                                                                                 alpha2) * a3 ** 2 - 2 * cos(
+                                                                                                                 alpha1) * cos(
+                                                                                                                 alpha2) * sin(
+                                                                                                                 alpha1) ** 2 * sin(
+                                                                                                                 alpha2) * a3 ** 2 + 2 * cos(
+                                                                                                                 alpha1) * cos(
+                                                                                                                 alpha2) * sin(
+                                                                                                                 alpha2) * a3 ** 2) * s2 ** 2 + np.power(
+        cos(alpha1), 3) * cos(alpha2) * sin(alpha2) * a3 ** 2 + cos(alpha1) * cos(alpha2) * sin(alpha1) ** 2 * sin(
+        alpha2) * a3 ** 2 - cos(alpha1) * cos(alpha2) * sin(alpha2) * a3 ** 2) + s3 ** 2 * ((2 * np.power(cos(alpha1),
+                                                                                                          3) * sin(
+        alpha2) * a2 * a3 + 2 * cos(alpha1) * sin(alpha1) ** 2 * sin(alpha2) * a2 * a3 - 2 * cos(alpha1) * sin(
+        alpha2) * a2 * a3) * c2 * s2 + (-cos(alpha1) ** 2 * cos(alpha2) * sin(alpha1) * sin(alpha2) * a3 * d3 - cos(
+        alpha2) * np.power(sin(alpha1), 3) * sin(alpha2) * a3 * d3 - cos(alpha1) ** 2 * sin(alpha1) * sin(
+        alpha2) * a3 * d2 - np.power(sin(alpha1), 3) * sin(alpha2) * a3 * d2 + cos(alpha2) * sin(alpha1) * sin(
+        alpha2) * a3 * d3) * c2 + (2 * np.power(cos(alpha1), 3) * sin(alpha2) ** 2 * a3 * d3 + 2 * cos(alpha1) * sin(
+        alpha1) ** 2 * sin(alpha2) ** 2 * a3 * d3 - 2 * cos(alpha1) * sin(alpha2) ** 2 * a3 * d3) * s2 ** 2 + (-cos(
+        alpha1) * sin(alpha2) * a1 * a3 + cos(alpha2) * sin(alpha1) * a2 * a3) * s2 - np.power(cos(alpha1), 3) * sin(
+        alpha2) ** 2 * a3 * d3 - cos(alpha1) * sin(alpha1) ** 2 * sin(alpha2) ** 2 * a3 * d3 + cos(alpha1) * sin(
+        alpha2) ** 2 * a3 * d3) + s3 * ((cos(alpha1) ** 2 * sin(alpha1) * sin(alpha2) ** 2 * a3 ** 2 + np.power(
+        sin(alpha1), 3) * sin(alpha2) ** 2 * a3 ** 2 + cos(alpha2) ** 2 * sin(alpha1) * a3 ** 2 - sin(
+        alpha1) * a2 ** 2 - sin(alpha1) * a3 ** 2) * c2 + (2 * np.power(cos(alpha1), 3) * cos(alpha2) * sin(
+        alpha2) * a3 ** 2 + 2 * cos(alpha1) * cos(alpha2) * sin(alpha1) ** 2 * sin(alpha2) * a3 ** 2 - 2 * cos(
+        alpha1) * cos(alpha2) * sin(alpha2) * a3 ** 2) * s2 ** 2 - sin(alpha1) * sin(alpha2) * a2 * d3 * s2 - np.power(
+        cos(alpha1), 3) * cos(alpha2) * sin(alpha2) * a3 ** 2 - cos(alpha1) * cos(alpha2) * sin(alpha1) ** 2 * sin(
+        alpha2) * a3 ** 2 + cos(alpha1) * cos(alpha2) * sin(alpha2) * a3 ** 2 - sin(alpha1) * a1 * a2) + (
+                            -2 * np.power(cos(alpha1), 3) * sin(alpha2) * a2 * a3 - 2 * cos(alpha1) * sin(
+                        alpha1) ** 2 * sin(alpha2) * a2 * a3 + 2 * cos(alpha1) * sin(alpha2) * a2 * a3) * c2 * s2 + (
+                            cos(alpha1) ** 2 * cos(alpha2) * sin(alpha1) * sin(alpha2) * a3 * d3 + cos(
+                        alpha2) * np.power(sin(alpha1), 3) * sin(alpha2) * a3 * d3 + cos(alpha1) ** 2 * sin(
+                        alpha1) * sin(alpha2) * a3 * d2 + np.power(sin(alpha1), 3) * sin(alpha2) * a3 * d2 - cos(
+                        alpha2) * sin(alpha1) * sin(alpha2) * a3 * d3) * c2 + (
+                            -2 * np.power(cos(alpha1), 3) * sin(alpha2) ** 2 * a3 * d3 - 2 * cos(alpha1) * sin(
+                        alpha1) ** 2 * sin(alpha2) ** 2 * a3 * d3 + 2 * cos(alpha1) * sin(
+                        alpha2) ** 2 * a3 * d3) * s2 ** 2 + cos(alpha1) * sin(alpha2) * a1 * a3 * s2 + np.power(
+        cos(alpha1), 3) * sin(alpha2) ** 2 * a3 * d3 + cos(alpha1) * sin(alpha1) ** 2 * sin(
+        alpha2) ** 2 * a3 * d3 - cos(alpha1) * sin(alpha2) ** 2 * a3 * d3)
 
     return det
+
+
+def my_det(t2, t3):
+    inter_val = [0, t2, t3]
+    # return -3 * (3 * cos(inter_val[2]) + 4) * (
+    #             sin(inter_val[2]) * (2 + 4 * cos(inter_val[1])) - 2 * cos(inter_val[1]) * cos(inter_val[2]))
+
+    return jac3R(inter_val, [0, 1, 0], [1, 2, 3 / 2], [np.pi / 2, np.pi / 2, 0]) * 8
+
+
+def my_det6R(s, e, cur_iter=0, total_iter=50):
+    point1_comp = [-3.1201, 0.7082, 1.4904, 2.62, -1.9637, -1.8817]
+    point2_comp = [3.0675, 1.0545, 1.3090, 2.4283, -1.2305, -2.3002]
+    point3_comp = [2.9132, 0.2824, 1.9297, -2.1648, -2.9685, -2.7165]
+    point4_comp = [2.5338, 1.2022, 1.1149, 1.5839, 0.6030, 2.6322]
+    point5_comp = [2.4730, 0.0943, 2.0281, -1.4916, -2.4244, 2.4362]
+    point6_comp = [2.4335, 0.0936, 1.5741, 1.4311, 2.3452, 0.5391]
+    point7_comp = [-0.8579, 3.0408, 1.5721, -1.5912, 2.1625, 0.5390]
+    point8_comp = [-0.8046, 3.0466, 1.1135, 1.5103, -2.2697, 2.4394]
+    point9_comp = [-0.7501, 1.9399, 2.0268, -1.4270, 0.6212, 2.6291]
+    point10_comp = [-0.2812, 2.0346, 1.8631, -0.5833, -1.0917, -2.4130]
+    point11_comp = [-0.2456, 2.8156, 1.3090, 0.4882, -2.8301, -2.3003]
+    point12_comp = [-0.1583, 2.7025, 1.4699, -0.0656, -2.5402, -1.9078]
+
+    point_record = [point1_comp, point2_comp, point3_comp, point4_comp, point5_comp, point6_comp, point7_comp,
+                    point8_comp, point9_comp, point10_comp, point11_comp, point12_comp]
+    # JACO
+    d1s = 212
+    d3s = -12
+    d4s = -249.3
+    d5s = -84.6
+    d6s = -222.73
+    a2s = 410
+
+    # DH parameters of CRX-10ia/L robot are:
+    d_list = [d1s, 0, d3s, d4s, d5s, d6s]
+    a_list = [0, a2s, 0, 0, 0, 0]
+    alpha_list = [PI / 2, PI, PI / 2, np.deg2rad(55), np.deg2rad(55), PI]
+    d_list = [number / 100 for number in d_list]
+    a_list = [number / 100 for number in a_list]
+
+    theta_list = return_intermediate(np.array(point_record[s]), np.array(point_record[e]), cur_iter, total_iter)
+
+    return static_pref_jacdet(theta_list, d_list, a_list, alpha_list)

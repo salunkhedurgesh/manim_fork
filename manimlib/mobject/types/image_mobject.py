@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from typing import Sequence, Tuple
     from manimlib.typing import Vect3
 
-
 class ImageMobject(Mobject):
     shader_folder: str = "image"
     shader_dtype: Sequence[Tuple[str, type, Tuple[int]]] = [
@@ -25,7 +24,7 @@ class ImageMobject(Mobject):
         ('opacity', np.float32, (1,)),
     ]
 
-    def __init__(        
+    def __init__(
         self,
         filename: str,
         height: float = 4.0,
@@ -34,7 +33,7 @@ class ImageMobject(Mobject):
         self.height = height
         self.image_path = get_full_raster_image_path(filename)
         self.image = Image.open(self.image_path)
-        super().__init__(texture_paths={"Texture": self.image_path}, **kwargs)
+        super().__init__(texture_paths={"Texture"+str(id(self)): self.image_path}, **kwargs)
 
     def init_data(self) -> None:
         super().init_data(length=4)

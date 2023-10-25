@@ -1,7 +1,6 @@
-import numpy.linalg as la
 import pandas as pd
-
 from functions.maths_functions.maths_phd import *
+from functions.phd_functions.robot_constants import *
 from manimlib import *
 
 
@@ -18,7 +17,12 @@ def get_coordinates(d_list, theta_list, a_list, alpha_list, coord_num, intermedi
     return np.matmul(M1, np.array([0, 0, 0, 1]))[0:3] + np.array([0, 0, offset])
 
 
-def get_frame_matrix(d_list, theta_list, a_list, alpha_list, coord_num=1, intermediate=False, offset=0.0):
+def get_frame_matrix(theta_list, d_list=None, a_list=None, alpha_list=None, coord_num=1, intermediate=False, offset=0, robot_type=None):
+    if d_list is None and robot_type is None:
+        robot_type = "jaco"
+    if robot_type is not None:
+        d_list, a_list, alpha_list = get_dh_parameters(robot=robot_type)
+
     M1 = np.eye(4, 4)
     for index_i in range(coord_num):
         M1 = np.matmul(np.matmul(M1, z_rotation_matrix(theta_list[index_i])), z_translation_matrix(d_list[index_i]))
@@ -119,10 +123,15 @@ def get_frame(origin, R, scale=1.0, thickness=0.02, opacity=1.0):
     return Group(x_arrow, y_arrow, z_arrow)
 
 
-def get_robot_instance(d_list, theta_list, a_list, alpha_list, offset=-5.0, link_radius=0.175, joint_radius=0.24,
-                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False):
+def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, offset=-5.0, link_radius=0.175, joint_radius=0.24,
+                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False, robot_type=None):
     coord_vec, joint_collection, link_collection = list(), list(), list()
     offset = 2 * joint_radius if offset == 0 else offset
+
+    if d_list is None and robot_type is None:
+        robot_type = "jaco"
+    if robot_type is not None:
+        d_list, a_list, alpha_list = get_dh_parameters(robot=robot_type)
 
     for ri in range(len(d_list) + 1):
         coord_vec.append(get_coordinates(d_list, theta_list, a_list, alpha_list, ri, True, offset=offset))
@@ -144,7 +153,7 @@ def get_robot_instance(d_list, theta_list, a_list, alpha_list, offset=-5.0, link
         joint_group.add(joint_i)
 
     if show_frame:
-        ee_point, ee_R = get_frame_matrix(d_list, theta_list, a_list, alpha_list, len(d_list), offset=offset)
+        ee_point, ee_R = get_frame_matrix(theta_list, d_list, a_list, alpha_list, len(d_list), offset=offset)
         if adjust_frame:
             ee_R = np.matmul(ee_R, x_rotation_matrix(PI)[0:3, 0:3])
         ee_frame = get_frame(ee_point, ee_R, thickness=0.03, opacity=opacity)

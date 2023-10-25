@@ -184,6 +184,7 @@ class NumberLine(Line):
         x_values: Iterable[float] | None = None,
         excluding: Iterable[float] | None = None,
         font_size: int = 24,
+        buff=None,
         **kwargs
     ) -> VGroup:
         if x_values is None:
@@ -198,7 +199,7 @@ class NumberLine(Line):
         for x in x_values:
             if excluding is not None and x in excluding:
                 continue
-            numbers.add(self.get_number_mobject(x, **kwargs))
+            numbers.add(self.get_number_mobject(x, buff=buff, **kwargs))
         self.add(numbers)
         self.numbers = numbers
         return numbers

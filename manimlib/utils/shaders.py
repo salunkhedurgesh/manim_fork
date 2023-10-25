@@ -11,6 +11,7 @@ from manimlib.config import parse_cli
 from manimlib.config import get_configuration
 from manimlib.utils.directories import get_shader_dir
 from manimlib.utils.file_ops import find_file
+from manimlib.constants import ASPECT_RATIO
 
 from typing import TYPE_CHECKING
 
@@ -97,7 +98,7 @@ def set_program_uniform(
 
 
 @lru_cache()
-def get_shader_code_from_file(filename: str) -> str | None:
+def get_shader_code_from_file(filename: str, texture_name="") -> str | None:
     if not filename:
         return None
 
@@ -112,6 +113,7 @@ def get_shader_code_from_file(filename: str) -> str | None:
 
     with open(filepath, "r") as f:
         result = f.read()
+        result = re.sub(r"\s+ASPECT_RATIO\s+=\s+[\s0-9/.]+", f" ASPECT_RATIO = {ASPECT_RATIO}", result)
 
     # To share functionality between shaders, some functions are read in
     # from other files an inserted into the relevant strings before
@@ -123,6 +125,10 @@ def get_shader_code_from_file(filename: str) -> str | None:
             os.path.join("inserts", line.replace("#INSERT ", ""))
         )
         result = result.replace(line, inserted_code)
+
+    if texture_name != "":
+        result = result.replace("Texture", texture_name)
+
     return result
 
 

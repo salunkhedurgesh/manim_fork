@@ -43,6 +43,7 @@ class ShaderWrapper(object):
         depth_test: bool = False,
         render_primitive: int = moderngl.TRIANGLE_STRIP,
     ):
+        self.texture_paths = texture_paths
         self.ctx = ctx
         self.vert_data = vert_data
         self.vert_indices = (vert_indices or np.zeros(0)).astype(int)
@@ -63,8 +64,13 @@ class ShaderWrapper(object):
 
     def init_program_code(self) -> None:
         def get_code(name: str) -> str | None:
+            texture_name = ""
+            if self.texture_paths is not None and self.shader_folder == "image":
+                for k in self.texture_paths:
+                    texture_name = k
+
             return get_shader_code_from_file(
-                os.path.join(self.shader_folder, f"{name}.glsl")
+                os.path.join(self.shader_folder, f"{name}.glsl"), texture_name=texture_name
             )
 
         self.program_code: dict[str, str | None] = {

@@ -25,8 +25,8 @@ class PlotSetup(Scene):
         critical_points = ImplicitFunction(get_det(robot_type="philippe"), color=BLUE_D, x_range=(-3.2, 3.2),
                                            y_range=(-3.2, 3.2))
         rval = 2
-        conic_plot = ImplicitFunction(get_conic(k_R=R, z=z, robot_type="philippe"), color=BLUE_D, x_range=(-rval, rval),
-                                      y_range=(-rval, rval))
+        conic_plot = ImplicitFunction(lambda c3, s3: 0.25*R**2 - 3.0*R*c3 - 1.5*R*s3 - 4.125*R + 6.75*c3**2 + 9.0*c3*s3 + 18.75*c3 + 2.25*s3**2 - 1.83697019872103e-16*s3*z + 12.375*s3 + 1.0*z**2 - 1.22464679914735e-16*z + 13.015625,
+                                             color=BLUE_D, x_range=(-rval, rval), y_range=(-rval, rval))
         circle = Circle(radius=2 / rval, stroke_color=PURPLE_D)
         critical_value = ImplicitFunction(get_critv(), color=BLUE_D, x_range=(0, 6), y_range=(-4, 4))
         critical_value.stretch(2 / 3, 0).stretch(4 / 8, 1).move_to(
@@ -55,8 +55,8 @@ class PlotSetup(Scene):
             z = ee[2]
             R = ee[0] ** 2 + ee[1] ** 2 + ee[2] ** 2
 
-            new_conic_plot = ImplicitFunction(get_conic(k_R=R, z=z, robot_type="philippe"), color=GREEN,
-                                              x_range=(-rval, rval), y_range=(-rval, rval))
+            new_conic_plot = ImplicitFunction(lambda c3, s3: 0.25*R**2 - 3.0*R*c3 - 1.5*R*s3 - 4.125*R + 6.75*c3**2 + 9.0*c3*s3 + 18.75*c3 + 2.25*s3**2 - 1.83697019872103e-16*s3*z + 12.375*s3 + 1.0*z**2 - 1.22464679914735e-16*z + 13.015625,
+                                             color=BLUE_D, x_range=(-rval, rval), y_range=(-rval, rval))
 
             self.play(*[Transform(item, item.move_to(plane.c2p(p[0], p[1])), run_time=0.05) for item, plane, p in
                         zip([joint_dot, work_dot], [plot_joint_space, plot_work_space], [theta_list, [rho, z]])])

@@ -486,12 +486,13 @@ class Axes(VGroup, CoordinateSystem):
         x_values: Iterable[float] | None = None,
         y_values: Iterable[float] | None = None,
         excluding: Iterable[float] = [0],
+        buffers: Iterable[float] = [None, None],
         **kwargs
     ) -> VGroup:
         axes = self.get_axes()
         self.coordinate_labels = VGroup()
-        for axis, values in zip(axes, [x_values, y_values]):
-            labels = axis.add_numbers(values, excluding=excluding, **kwargs)
+        for axis, values, buff_val in zip(axes, [x_values, y_values], buffers):
+            labels = axis.add_numbers(values, excluding=excluding, buff=buff_val, **kwargs)
             self.coordinate_labels.add(labels)
         return self.coordinate_labels
 
