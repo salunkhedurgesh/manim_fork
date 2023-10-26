@@ -17,6 +17,24 @@ def get_coordinates(d_list, theta_list, a_list, alpha_list, coord_num, intermedi
     return np.matmul(M1, np.array([0, 0, 0, 1]))[0:3] + np.array([0, 0, offset])
 
 
+def get_joint_coordinates(d_list, theta_list, a_list, alpha_list, coord_num, offset=0.0):
+    if coord_num == 0:
+        return np.array([0, 0, offset])
+    elif coord_num == 1:
+        return [np.array([0, 0, offset]), np.array([0, 0, offset + 1])]
+
+    M1 = np.eye(4, 4)
+    for index_i in range(coord_num-1):
+        M1 = np.matmul(np.matmul(M1, z_rotation_matrix(theta_list[index_i])), z_translation_matrix(d_list[index_i]))
+        M1 = np.matmul(np.matmul(M1, x_rotation_matrix(alpha_list[index_i])), x_translation_matrix(a_list[index_i]))
+
+    origin_joint = np.matmul(M1, np.array([0, 0, 0, 1]))[0:3] + np.array([0, 0, offset])
+    end_joint = np.matmul(M1, np.array([0, 0, 1, 1]))[0:3] + np.array([0, 0, offset])
+    return [origin_joint, end_joint]
+
+
+
+
 def get_frame_matrix(theta_list, d_list=None, a_list=None, alpha_list=None, coord_num=1, intermediate=False, offset=0, robot_type=None):
     if d_list is None and robot_type is None:
         robot_type = "jaco"
@@ -124,7 +142,7 @@ def get_frame(origin, R, scale=1.0, thickness=0.02, opacity=1.0):
 
 
 def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, offset=-5.0, link_radius=0.175, joint_radius=0.24,
-                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False, robot_type=None):
+                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False, robot_type=None, hide_ee=False):
     coord_vec, joint_collection, link_collection = list(), list(), list()
     offset = 2 * joint_radius if offset == 0 else offset
 
@@ -135,17 +153,22 @@ def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, of
 
     for ri in range(len(d_list) + 1):
         coord_vec.append(get_coordinates(d_list, theta_list, a_list, alpha_list, ri, True, offset=offset))
-        if ri > 0:
-            jc = RED_D if ri == 1 else joint_color
-            joint_collection.append(get_robot_joint(coord_vec[-2], coord_vec[-1], joint_color=jc,
-                                                    radius=joint_radius, opacity=opacity))
-            link = get_robot_link(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
-                                  opacity=opacity)
-            if not isinstance(link, int):
-                link_collection.append(link)
+        if ri == 0:
+            continue
+        jc = RED_D if ri == 1 else joint_color
+        joint_points = get_joint_coordinates(d_list, theta_list, a_list, alpha_list, ri, offset=offset)
+        joint_collection.append(get_robot_joint(joint_points[0], joint_points[1], joint_color=jc,
+                                                radius=joint_radius, opacity=opacity))
+        link = get_robot_link(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
+                              opacity=opacity)
+        if not isinstance(link, int):
+            link_collection.append(link)
 
     link_group, joint_group = Group(), Group()
-    ee = get_ee(coord_vec[-1], radius=0.3, opacity=opacity)
+    if hide_ee:
+        ee = get_ee(coord_vec[-1], radius=0.003, opacity=opacity)
+    else:
+        ee = get_ee(coord_vec[-1], radius=0.3, opacity=opacity)
 
     for link_i in link_collection:
         link_group.add(link_i)
@@ -296,13 +319,11 @@ def get_saved_mat(df, to_save=None, return_data=False):
         df_n.to_csv(to_save)
 
 
-def make_total_paths():
+def make_total_paths(path=""):
     path_record = []
-    df1 = get_saved_mat(pd.read_csv(
-        "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta1_8648.csv"),
+    df1 = get_saved_mat(pd.read_csv(path + "resources/data/icra_vectors/21_9_pos_theta1_8648.csv"),
         return_data=True)
-    df2 = get_saved_mat(pd.read_csv(
-        "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta2_8648.csv"),
+    df2 = get_saved_mat(pd.read_csv(path + "resources/data/icra_vectors/21_9_pos_theta2_8648.csv"),
         return_data=True)
     df3 = get_saved_mat(pd.read_csv(
         "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/icra_vectors/21_9_pos_theta3_8648.csv"),
@@ -349,13 +370,12 @@ def make_total_paths():
     child_df2.to_csv("D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/data_jaco/negative_child.csv")
 
 
-def get_solution(instance, t1_val, det_sign):
+def get_solution(instance, t1_val, det_sign, path=None):
+    if path is None: path = ""
     if det_sign == 1:
-        df = pd.read_csv(
-            "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/data_jaco/positive_child.csv")
+        df = pd.read_csv(path + "resources/data/positive_child.csv")
     else:
-        df = pd.read_csv(
-            "D:/Work/Projects/PhD/manim_durgesh/PhD_thesis/sixR/resources/data/data_jaco/negative_child.csv")
+        df = pd.read_csv(path + "resources/data/negative_child.csv")
 
     df2 = df.loc[df['instance'] == instance]
     cur_diff = 0.5
@@ -366,3 +386,14 @@ def get_solution(instance, t1_val, det_sign):
             cur_diff = abs(t1_val - df2.iloc[k]['theta1'])
 
     return list(df2[df2['IKS'] == m_i + 1].iloc[0][['theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'theta6']])
+
+def get_theta_instance(instance, path=None):
+    if path is None: path = ""
+    pos_df = pd.read_csv(path + "resources/data/positive_child.csv")
+    neg_df = pd.read_csv(path + "resources/data/negative_child.csv")
+
+    return [list(pos_df[pos_df['instance'] == instance]['theta1']), list(neg_df[neg_df['instance'] == instance]['theta1'])]
+
+
+
+

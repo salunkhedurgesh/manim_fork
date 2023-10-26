@@ -9,7 +9,11 @@ def get_axis_angle(v1, v2):
         v1 = np.array(v1)
         v2 = np.array(v2)
 
-    return np.cross(v1, v2), np.arccos(la.multi_dot([v1, v2]) / (la.norm(v1) * la.norm(v2)))
+    angle = np.arccos(la.multi_dot([v1, v2]) / (la.norm(v1) * la.norm(v2)))
+    if abs(angle) < 1e-5:
+        return v1, 0
+
+    return np.cross(v1, v2), angle
 
 
 def rad2deg(val):
