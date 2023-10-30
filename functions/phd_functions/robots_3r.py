@@ -7,14 +7,14 @@ from sympy import *
 small_plot_size = 4
 
 
-def get_small_plot(edge=None, label=False, xvalue=None, yvalue=None, xconfig=None, yconfig=None):
+def get_small_plot(edge=None, label=False, xvalue=None, yvalue=None, xconfig=None, yconfig=None, only_labels=False, box_opacity=1, label_list=None, label_position="corner"):
     if xvalue is None:
         xvalue = (-3, 3)
     if yvalue is None:
         yvalue = (-3, 3)
 
     if xconfig is None:
-        xconfig = dict(include_ticks=False)
+        xconfig = dict(stroke_width=0.001, opacity=0, include_ticks=False, stroke_color=BLACK)
     if yconfig is None:
         yconfig = dict(stroke_width=0.001, opacity=0, include_ticks=False, stroke_color=BLACK)
 
@@ -30,12 +30,26 @@ def get_small_plot(edge=None, label=False, xvalue=None, yvalue=None, xconfig=Non
     shift_buff = 0.85
     if edge is not None:
         plot_to_return.to_edge(edge, buff=SMALL_BUFF * 2)
-    box = SurroundingRectangle(plot_to_return, stroke_width=1, buff=0)
-    top_right = TexText(r"""$(\pi, \pi)$""""").move_to(plot_to_return.get_center()).scale(0.6)
-    bottom_left = TexText(r"""(-$\pi$, -$\pi$)""""").move_to(plot_to_return.get_center()).scale(0.6)
-    top_right.shift(np.array([width * shift_buff / 2, height * 1.1 / 2, 0]))
-    bottom_left.shift(np.array([-width * shift_buff / 2, -height * 1.1 / 2, 0]))
+    box = SurroundingRectangle(plot_to_return, stroke_width=1, buff=0, stroke_opacity=box_opacity)
+    if label_list is None:
+        label_list = [r"""$(\pi, \pi)$""""", r"""(-$\pi$, -$\pi$)"""""]
+    top_right = TexText(label_list[0]).move_to(plot_to_return.get_center()).scale(0.6)
+    bottom_left = TexText(label_list[1]).move_to(plot_to_return.get_center()).scale(0.6)
+
+    if label_position == "corner":
+        horizontal_shift = [width * shift_buff / 2, -width * shift_buff / 2]
+        vertical_shift = [height * 1.1 / 2, -height * 1.1 / 2]
+    elif label_position == "center":
+        horizontal_shift = [-width * 1.1 / 2, 0]
+        vertical_shift = [0, -height * 1.1 / 2]
+    else:
+        horizontal_shift = [-width * 0.1 / 2, 0]
+        vertical_shift = [0, -height * 1.1 / 2]
+
+    top_right.shift(np.array([horizontal_shift[0], vertical_shift[0], 0]))
+    bottom_left.shift(np.array([horizontal_shift[1], vertical_shift[1], 0]))
     second_element = Group(box, top_right, bottom_left) if label else box
+    if only_labels: second_element = Group(top_right, bottom_left)
     return plot_to_return, second_element
 
 
@@ -101,7 +115,7 @@ def get_fkin(theta_list, d_list=None, a_list=None, alpha_list=None, robot_type=N
 
     M1 = np.eye(4, 4)
     for index_i in range(len(d_list)):
-        print(index_i)
+        # print(index_i)
         M1 = np.matmul(np.matmul(M1, z_rotation_matrix(theta_list[index_i])), z_translation_matrix(d_list[index_i]))
         M1 = np.matmul(np.matmul(M1, x_rotation_matrix(alpha_list[index_i])), x_translation_matrix(a_list[index_i]))
 
@@ -247,7 +261,7 @@ def get_ikin(rho=None, z=None, theta_list=None, d_list=None, a_list=None, alpha_
     conic_equation = get_conic(k_R=R, k_z=z, d_list=d_list, a_list=a_list, alpha_list=alpha_list, _sym=True)
     circle_eqn = c3 ** 2 + s3 ** 2 - 1
 
-    print(f"{rho} and {z}")
+    # print(f"{rho} and {z}")
 
     iks = solve([conic_equation, circle_eqn], [c3, s3])
     vector_theta3 = []
@@ -264,3 +278,30 @@ def get_ikin(rho=None, z=None, theta_list=None, d_list=None, a_list=None, alpha_
         final_solutions.append(all_solutions)
 
     return final_solutions
+
+
+def draw_robot2r(theta1=PI/4, theta2=PI/4, link_lengths=None, offset=None):
+    if link_lengths is None:
+        link_lengths = [0.5, 1]
+    if offset is None:
+        offset = np.array([-2, -1, 0])
+
+    l1, l2 = link_lengths
+    point1 = np.array([0, 0, 0])
+    point2 = point1 + l1 * cos(theta1)
+    ee_point = point2 + l2 * cos(theta1 + theta2)
+    joint1 = Circle(radius=0.1).move_to(point1)
+    joint2 = Circle(radius=0.1).move_to(point2)
+    ee = Dot().move_to(ee_point)
+
+def real_solutions(sol_set):
+    vector_return = []
+    for sol in sol_set:
+        first_sol_imag = sol[0].as_real_imag()
+        second_sol_imag = sol[1].as_real_imag()
+        if abs(first_sol_imag[1]) < 1e-10 and abs(second_sol_imag[1]) < 1e-10:
+            vector_return.append((first_sol_imag[0], second_sol_imag[0]))
+
+    return vector_return
+
+

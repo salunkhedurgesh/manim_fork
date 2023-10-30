@@ -24,7 +24,7 @@ def get_joint_coordinates(d_list, theta_list, a_list, alpha_list, coord_num, off
         return [np.array([0, 0, offset]), np.array([0, 0, offset + 1])]
 
     M1 = np.eye(4, 4)
-    for index_i in range(coord_num-1):
+    for index_i in range(coord_num - 1):
         M1 = np.matmul(np.matmul(M1, z_rotation_matrix(theta_list[index_i])), z_translation_matrix(d_list[index_i]))
         M1 = np.matmul(np.matmul(M1, x_rotation_matrix(alpha_list[index_i])), x_translation_matrix(a_list[index_i]))
 
@@ -153,6 +153,7 @@ def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, of
 
     for ri in range(len(d_list) + 1):
         coord_vec.append(get_coordinates(d_list, theta_list, a_list, alpha_list, ri, True, offset=offset))
+        # print(f"ri : {ri}, coord_vec before {coord_vec[-1]}")
         if ri == 0:
             continue
         jc = RED_D if ri == 1 else joint_color
@@ -160,9 +161,15 @@ def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, of
         joint_collection.append(get_robot_joint(joint_points[0], joint_points[1], joint_color=jc,
                                                 radius=joint_radius, opacity=opacity))
         link = get_robot_link(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
+                                  opacity=opacity)
+        coord_vec.append(get_coordinates(d_list, theta_list, a_list, alpha_list, ri, False, offset=offset))
+        # print(f"coord_vec after {coord_vec[-1]}")
+        link_after = get_robot_link(coord_vec[-2], coord_vec[-1], link_color=link_color, radius=link_radius,
                               opacity=opacity)
         if not isinstance(link, int):
             link_collection.append(link)
+        if not isinstance(link_after, int):
+            link_collection.append(link_after)
 
     link_group, joint_group = Group(), Group()
     if hide_ee:

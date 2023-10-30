@@ -1,7 +1,10 @@
+import numpy as np
+
 from functions.phd_functions.functions_epfl import *
 from functions.phd_functions.robots_3r import *
 
 from manimlib import *
+from manim_slides.slide import Slide, ThreeDSlide
 
 
 class JacDetPlot(ThreeDScene):
@@ -107,10 +110,12 @@ class JacDetPlot(ThreeDScene):
             k = min(k, path_iter)
             self.play(ReplacementTransform(det_point,
                                            det_point.move_to(
-                                               back_plane.c2p(k * 50 / path_iter, my_det6R(start_index, end_index, cur_iter=k,
-                                                                          total_iter=path_iter)))), run_time=0.05)
+                                               back_plane.c2p(k * 50 / path_iter,
+                                                              my_det6R(start_index, end_index, cur_iter=k,
+                                                                       total_iter=path_iter)))), run_time=0.05)
             inter_theta = get_interpolation(point_record[0], point_record[4], k, path_iter)
-            self.play(Transform(rob_ins, get_robot_instance(theta_list=inter_theta, offset=0, robot_type="jaco")), run_time=0.02)
+            self.play(Transform(rob_ins, get_robot_instance(theta_list=inter_theta, offset=0, robot_type="jaco")),
+                      run_time=0.02)
 
             ee_point, ee_R = get_frame_matrix(theta_list=inter_theta, coord_num=6, offset=0.48, robot_type="jaco")
             ee_point_vec.append(ee_point)
@@ -137,3 +142,154 @@ class RobotTrial(ThreeDScene):
 
         self.add(rob_ins)
         self.embed()
+
+
+class Definition(Scene):
+    def construct(self):
+        # object definition
+        toc = TexText("What is a cuspidal robot?").shift(UP * 2)
+        ans = TexText(r"""\begin{minipage}{8 cm} \centering A robot that has multiple inverse kinematic solutions in an 
+        \emph{aspect} is defined as a cuspidal robot \end{minipage}""", font_size=36).next_to(toc, DOWN * 1.5)
+
+        assumption1 = TexText(
+            r"""\begin{minipage}{8 cm} \centering $\rightarrow$ There are no joint limits \end{minipage}""",
+            font_size=36).next_to(ans, DOWN)
+        assumption2 = TexText(
+            r"""\begin{minipage}{8 cm} \centering $\rightarrow$ Collision constraints are 
+            not considered \end{minipage}""", font_size=36).next_to(assumption1, DOWN * 1.2)
+
+        # animations
+        self.add(get_background("Definition"))
+        self.play(FadeIn(toc))
+        self.wait()
+        # self.next_slide()
+        self.play(FadeIn(ans))
+        self.wait()
+        # self.next_slide()
+        self.play(FadeIn(assumption1))
+        self.play(FadeIn(assumption2))
+        self.wait()
+        # self.next_slide()
+
+
+class Robot2R(Scene):
+
+    def construct(self):
+        link_lengths = [2, 3]
+        offset = np.array([0, -1, 0])
+        theta1, theta2 = 55 * DEGREES, -60 * DEGREES
+        l1, l2 = link_lengths
+        point1 = np.array([0, 0, 0]) + offset
+        point2 = point1 + np.array([l1 * cos(theta1), l1 * sin(theta1), 0])
+        ee_point = point2 + np.array([l2 * cos(theta1 + theta2), l2 * sin(theta1 + theta2), 0])
+        joint1 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(point1)
+        joint2 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(point2)
+        ee = Dot().move_to(ee_point)
+
+        link1 = Line(point1, point2)
+        link2 = Line(point2, ee_point)
+        mirror_ee_point = ee_point - offset
+        mirroring_line = Line(-3 * mirror_ee_point, 3 * mirror_ee_point, stroke_width=0.5, stroke_color=YELLOW).shift(offset)
+        axis_config = dict(include_ticks=True, stroke_color=WHITE)
+        plot_joint_space, labels = get_small_plot(edge=LEFT, label=True, xconfig=axis_config, yconfig=axis_config, only_labels=True)
+        x_label2 = TexText(r"""$\theta_1$""", font_size=36).next_to(plot_joint_space.x_axis, DOWN * 0.5).shift(RIGHT * 1.5)
+        y_label2 = TexText(r"""$\theta_2$""", font_size=36).next_to(plot_joint_space.y_axis).rotate(np.pi / 2).shift(UP * 1.7 + LEFT * 0.8)
+        singularity_curves = Group()
+        for val in [-PI, 0, PI]:
+            singularity_curves.add(plot_joint_space.get_graph(lambda x: val).set_color(color=BLUE_D))
+
+        dot_js = Dot(fill_color=PURPLE).move_to(plot_joint_space.c2p(theta1, theta2))
+
+        # text objects
+        elbow_up = TexText("Elbow Up configuration", font_size=42).move_to(np.array([2, 2, 0]))
+        elbow_down = TexText("Elbow Down configuration", font_size=42).move_to(np.array([2, -2.5, 0]))
+        singularity = TexText(
+            r"""\begin{minipage}{5 cm}\centering A singular configuration is met while changing IKS \end{minipage}""",
+            font_size=36).to_edge(RIGHT, buff=LARGE_BUFF).add_background_rectangle(color=BLACK, opacity=0.8).fix_in_frame()
+        singularity_curves_text = TexText("singularity curves").to_edge(LEFT, buff=LARGE_BUFF).shift(UP).add_background_rectangle(color=BLACK, opacity=1)
+
+        # Animations
+
+        self.add(get_background())
+        self.add(dot_js.copy())
+        self.add(plot_joint_space, labels, x_label2, y_label2, dot_js)
+        self.wait()
+        self.play(FadeIn(singularity_curves))
+        self.wait()
+        self.FadeInFadeOut(singularity_curves_text)
+
+        self.wait()
+        # self.play(*[FadeOut(obj) for obj in [x_label2, y_label2]])
+        self.add(link1, link2, joint1, joint2, ee)
+        theta1_mirror, theta2_mirror = self.draw_mirror(point1, point2, ee_point, l1, _add_obj=False)
+        self.wait(2)
+        self.play(ShowCreation(mirroring_line), run_time=3)
+        self.wait()
+        self.draw_mirror(point1, point2, ee_point, l1, _add_obj=True)
+        self.wait()
+        self.play(FadeIn(elbow_up))
+        self.wait()
+        self.play(FadeIn(elbow_down))
+        self.wait()
+        self.play(FadeOut(plot_joint_space.y_axis))
+
+        pause = False
+        last_sign = theta2
+        self.add(TracedPath(dot_js.get_center, stroke_width=3, stroke_color=GOLD_A))
+        for ii, jj in zip(np.linspace(theta1, theta1_mirror, 40), np.linspace(theta2, theta2_mirror, 40)):
+            new_point2 = point1 + np.array([l1 * cos(ii), l1 * sin(ii), 0])
+            new_ee_point = new_point2 + np.array([l2 * cos(ii + jj), l2 * sin(ii + jj), 0])
+            if last_sign * jj < 0:
+                stroke_color = RED_D
+                pause = True
+            else:
+                stroke_color = WHITE
+            last_sign = jj
+            temp_link1 = Line(point1, new_point2, stroke_color=stroke_color)
+            temp_link2 = Line(new_point2, new_ee_point, stroke_color=stroke_color)
+            temp_joint2 = joint2.copy().move_to(new_point2)
+            temp_ee = ee.copy().move_to(new_ee_point)
+            temp_dotjs = dot_js.copy().move_to(plot_joint_space.c2p(ii, jj))
+            if pause:
+                temp_ee.set_fill(color=RED_D, opacity=1)
+            self.play(*[Transform(obj1, obj2) for obj1, obj2 in zip([link1, link2, joint2, ee, dot_js], [temp_link1, temp_link2, temp_joint2, temp_ee, temp_dotjs])], run_time=0.2)
+            if pause:
+                self.play(Transform(dot_js, dot_js.scale(2)))
+                self.play(Transform(dot_js, dot_js.scale(0.5)))
+                self.FadeInFadeOut(singularity)
+                pause = False
+
+        self.wait(2)
+        self.embed()
+
+    def FadeInFadeOut(self, *in_obj, wait_time=3):
+        self.play(*[FadeIn(item) for item in in_obj])
+        self.wait(wait_time)
+        self.play(*[FadeOut(item) for item in in_obj])
+
+    def FadeIt(self, *in_obj):
+        self.play(*[Transform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
+
+
+    def draw_mirror(self, point1, point2, ee_point, l1, _add_obj=False):
+
+        alpha = angle_between_vectors(ee_point - point1, point2 - point1)
+        beta = angle_between_vectors(RIGHT, ee_point - point1)
+        theta1_mirror = -(alpha - beta)
+        mirror_point2 = point1 + np.array([l1 * cos(theta1_mirror), l1 * sin(theta1_mirror), 0])
+        new_point1 = np.array([l1 * cos(theta1_mirror), l1 * sin(theta1_mirror), 0])
+        theta2_mirror = angle_between_vectors(new_point1, ee_point - (point1 + new_point1))
+
+        if not _add_obj:
+            return [theta1_mirror, theta2_mirror]
+
+        joint2 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(mirror_point2)
+        mirror_link1 = DashedLine(point1, mirror_point2)
+        mirror_link2 = DashedLine(mirror_point2, ee_point)
+        joint1 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(point1)
+
+        self.play(*[FadeIn(obj) for obj in [mirror_link1, mirror_link2, joint2, joint1]])
+
+
+
+
