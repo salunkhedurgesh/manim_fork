@@ -50,6 +50,8 @@ def get_small_plot(edge=None, label=False, xvalue=None, yvalue=None, xconfig=Non
     bottom_left.shift(np.array([horizontal_shift[1], vertical_shift[1], 0]))
     second_element = Group(box, top_right, bottom_left) if label else box
     if only_labels: second_element = Group(top_right, bottom_left)
+
+
     return plot_to_return, second_element
 
 

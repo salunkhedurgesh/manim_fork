@@ -1,6 +1,7 @@
 from functions.phd_functions.robot_functions import *
 from functions.phd_functions.functions_epfl import *
 from manimlib import *
+from numpy import sin, cos, sqrt
 import pandas as pd
 
 """
@@ -430,8 +431,8 @@ class SliceExplanation(Scene):
         # back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
         group_dot = VGroup()
         print(f"length of dataframe is {len(df)}")
-        for ii in range(0, len(df), 10):
-            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+        for ii in range(0, len(df), 5):
+            if ii % 1000 == 0: print(f"done adding Dot at index {ii}")
             group_dot.add(
                 Dot(fill_color=dict_color_code[df['iks'][ii]]).scale(0.2).move_to(back_plane.coords_to_point(
                     df['x'][ii] / 100, df['y'][ii] / 100)))
@@ -445,8 +446,7 @@ class SliceExplanation(Scene):
         for iks, shifter in zip([8, 6, 4], [-1, 0.001, 1]):
             color = dict_color_code[iks]
             print(f"Color is {color}")
-            circle_dot = Circle(radius=0.2, stroke_color=color).to_edge(RIGHT, buff=3).shift(DOWN * shifter)
-            circle_dot.set_fill(color=color, opacity=1)
+            circle_dot = Dot(radius=0.2, fill_color=color).to_edge(RIGHT, buff=3).shift(DOWN * shifter)
             text_dot = TexText(str(iks) + " IKS region", font_size=32).next_to(circle_dot, RIGHT * 0.7)
             caption_individual = Group(circle_dot, text_dot)
             caption.add(caption_individual)
@@ -502,3 +502,77 @@ class SliceExplanation(Scene):
         self.play(ScaleInPlace(in_obj, scale_factor=scale_factor))
         self.wait(0.2)
         self.play(ScaleInPlace(in_obj, scale_factor=1 / scale_factor))
+
+
+
+class TorusTransform(ThreeDScene):
+
+    def construct(self):
+        axes = ThreeDAxes()
+        axes.x_axis.set_color(color=RED_D)
+        axes.y_axis.set_color(color=GREEN_D)
+        # self.add(axes)
+
+        big_radius = 1
+        small_radius = 1
+        
+        torus = ParametricSurface(lambda u, v: self.torus_func(u,v, R=big_radius, r=small_radius), u_range=(0, TAU), v_range=(0, 0.01)).set_color(color=BLUE_D)
+        torus.set_reflectiveness(0.5)
+
+        for ii in np.arange(0.01, TAU+0.1, 0.1):
+            new_torus = ParametricSurface(lambda u, v: self.torus_func(u,v, R=big_radius, r=small_radius), u_range=(0, TAU), v_range=(0, ii)).set_color(color=BLUE_D)
+            self.play(Transform(torus, new_torus), run_time=0.05)
+        
+        # self.add(torus)
+
+        self.wait(2)
+        total_iterations = 25
+        for iteration in range(total_iterations):
+            ii = PI - iteration * (185 * DEGREES) / total_iterations
+            new_radius = PI * big_radius / ii
+            opacity = 1 - 0.5 * iteration / total_iterations
+            new_torus = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius), u_range=(0, TAU), v_range=(PI - ii, PI + ii)).set_color(color=BLUE_D, opacity=opacity)
+            self.play(Transform(torus, new_torus), run_time=0.05)
+        
+        cylinder = ParametricSurface(lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]), u_range=(-PI * big_radius, PI * big_radius), v_range=(0, TAU)).set_color(color=BLUE_D, opacity=0.5).set_reflectiveness(0.5)
+        self.play(FadeOut(torus), FadeIn(cylinder), run_time=0.1)
+        self.wait(2)
+
+        for iteration in range(total_iterations):
+            ii = PI - iteration * (90 * DEGREES) / total_iterations
+            new_radius = PI * small_radius / ii
+            z_nudge = (PI - 1 - small_radius) * iteration / total_iterations
+            # y_pull = new_radius * cos(v) * iteration / total_iterations
+            new_cylinder = ParametricSurface(lambda u, v: np.array([u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius, (new_radius + z_nudge) * sin(v)]), u_range=(-PI * big_radius, PI * big_radius), v_range=(PI - ii, PI + ii)).set_color(color=BLUE_D, opacity=0.5)
+            self.play(Transform(cylinder, new_cylinder), run_time=0.05)
+
+        plane = ParametricSurface(lambda u, v: np.array([u, small_radius, v]), u_range=(-PI * big_radius, PI * big_radius), v_range=(-PI * big_radius, PI * big_radius)).set_color(color=BLUE_D, opacity=0.5)
+        self.play(FadeOut(cylinder), FadeIn(plane), run_time=0.1)
+        self.wait(2)
+
+        point_a = np.array([-PI, 1, -PI])
+        point_b = np.array([PI, 1, -PI])
+        point_c = np.array([PI, 1, PI])
+        point_d = np.array([-PI, 1, PI])
+
+        line_left = Line3D(point_a, point_d, color=YELLOW_D)
+        line_right = Line3D(point_b, point_c, color=YELLOW_D)
+        line_bottom = Line3D(point_a, point_b, color=RED_D)
+        line_top = Line3D(point_c, point_d, color=RED_D)
+
+        self.play(*[FadeIn(lines) for lines in [line_left, line_right]])
+        self.wait()
+        self.play(*[FadeIn(lines) for lines in [line_bottom, line_top]])
+
+        frame = self.camera.frame
+        frame.set_euler_angles(theta=0, phi=Pi / 2, gamma=0)
+        
+        self.embed()
+
+    def torus_func(self, u, v, R=3, r=1):
+
+        x_val = -(R + r * cos(u)) * sin(v)
+        y_val = (R + r * cos(u)) * cos(v) + R + r
+        z_val = r * sin(u)
+
+        return np.array([x_val, y_val, z_val])

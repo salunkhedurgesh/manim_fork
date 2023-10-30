@@ -3,7 +3,7 @@ from __future__ import annotations
 import moderngl
 import numpy as np
 
-from manimlib.constants import GREY
+from manimlib.constants import GREY, BLUE_D
 from manimlib.constants import OUT
 from manimlib.mobject.mobject import Mobject
 from manimlib.utils.bezier import integer_interpolate
@@ -255,6 +255,8 @@ class ParametricSurface(Surface):
         uv_func: Callable[[float, float], Iterable[float]],
         u_range: tuple[float, float] = (0, 1),
         v_range: tuple[float, float] = (0, 1),
+        color=BLUE_D,
+        opacity=0.5,
         **kwargs
     ):
         self.passed_uv_func = uv_func

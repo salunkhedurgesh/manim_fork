@@ -146,19 +146,18 @@ class PlotSetup(Scene):
 class TorusTransform(ThreeDScene):
 
     def construct(self):
-        a = Circle()
-        self.add(a)
+        axes = ThreeDAxes()
+        self.add(axes)
+        
+        torus = Torus(r1=3, r2=1)
+        sphere = Sphere()
+        # self.add(torus)
+        
+        surface_1 = ParametricSurface(lambda u, v: np.array([(3 + np.cos(u)) * np.cos(v), 3 * np.sin(v) * np.sin(u), np.sin(u)]), u_range=(0, TAU), v_range=(0, TAU))
+        
+        self.add(torus, sphere)
+        self.add(surface_1)
         self.embed()
-        # axes = ThreeDAxes()
-        # self.add(axes)
-        #
-        # torus = Torus(r1=3, r2=1)
-        # sphere = Sphere()
-        # # self.add(torus)
-        #
-        # surface_1 = ParametricSurface(lambda u, v: np.array([(3 + np.cos(u)) * np.cos(v), 3 * np.sin(v) * np.sin(u), np.sin(u)]), u_range=(0, TAU), v_range=(0, TAU))
-        # self.add(surface_1)
-
 
 class IcraCheck(ThreeDScene):
 
@@ -189,13 +188,14 @@ class IcraCheck(ThreeDScene):
         theta_list2 = adapt_2_pi(point5_comp)
 
         det_plot = ImplicitFunction(lambda x, y: x ** 5 - y ** 2, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2))
-        robot = get_robot_instance(d_list, theta_list, a_list, alpha_list, offset=0)
+        robot = get_robot_instance(theta_list, offset=0, robot_type="jaco")
         plane = ParametricSurface(lambda u, v: np.array([u, v, 0]), u_range=(-1, 1), v_range=(-1, 1), color=GREY_E)
         self.add(plane, robot)
         total_iterations = 10
         for ii in range(total_iterations):
             interpolated_theta_list = get_interpolation(theta_list, theta_list2, ii, total_iterations)
-            self.play(Transform(robot, get_robot_instance(d_list, interpolated_theta_list, a_list,
-                                                          alpha_list, offset=0, show_frame=True)), run_time=0.05)
+            self.play(Transform(robot, get_robot_instance(interpolated_theta_list, offset=0, show_frame=True, robot_type="jaco")), run_time=0.05)
 
         # self.embed()
+
+

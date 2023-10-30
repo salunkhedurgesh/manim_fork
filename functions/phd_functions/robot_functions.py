@@ -142,7 +142,8 @@ def get_frame(origin, R, scale=1.0, thickness=0.02, opacity=1.0):
 
 
 def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, offset=-5.0, link_radius=0.175, joint_radius=0.24,
-                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False, robot_type=None, hide_ee=False):
+                       link_color=YELLOW_D, joint_color=BLUE_D, opacity=1.0, show_frame=True, adjust_frame=False, robot_type=None, hide_ee=False,
+                       add_plane=False):
     coord_vec, joint_collection, link_collection = list(), list(), list()
     offset = 2 * joint_radius if offset == 0 else offset
 
@@ -181,6 +182,9 @@ def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, of
         link_group.add(link_i)
     for joint_i in joint_collection:
         joint_group.add(joint_i)
+
+    if add_plane:
+        plane = ParametricSurface(lambda u, v: np.array([u, v, 0]), u_range=(-1, 1), v_range=(-1, 1), color=GREY_E).move_to(coord_vec - np.array([0, 0, 0.]))
 
     if show_frame:
         ee_point, ee_R = get_frame_matrix(theta_list, d_list, a_list, alpha_list, len(d_list), offset=offset)
