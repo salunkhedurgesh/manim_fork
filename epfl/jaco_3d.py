@@ -513,19 +513,30 @@ class TorusTransform(ThreeDScene):
         axes.y_axis.set_color(color=GREEN_D)
         # self.add(axes)
 
+        point_a = np.array([-PI, 1, -PI])
+        point_b = np.array([PI, 1, -PI])
+        point_c = np.array([PI, 1, PI])
+        point_d = np.array([-PI, 1, PI])
+
+        line_left = Line3D(point_a, point_d, color=YELLOW_D)
+        line_right = Line3D(point_b, point_c, color=YELLOW_D)
+        line_bottom = Line3D(point_a, point_b, color=RED_D)
+        line_top = Line3D(point_c, point_d, color=RED_D)
+
+
         big_radius = 1
         small_radius = 1
-        
+
+        # formation of torus        
         torus = ParametricSurface(lambda u, v: self.torus_func(u,v, R=big_radius, r=small_radius), u_range=(0, TAU), v_range=(0, 0.01)).set_color(color=BLUE_D)
         torus.set_reflectiveness(0.5)
 
         for ii in np.arange(0.01, TAU+0.1, 0.1):
             new_torus = ParametricSurface(lambda u, v: self.torus_func(u,v, R=big_radius, r=small_radius), u_range=(0, TAU), v_range=(0, ii)).set_color(color=BLUE_D)
             self.play(Transform(torus, new_torus), run_time=0.05)
-        
-        # self.add(torus)
-
         self.wait(2)
+
+        # cutting the torus to cylinder
         total_iterations = 25
         for iteration in range(total_iterations):
             ii = PI - iteration * (185 * DEGREES) / total_iterations
@@ -538,6 +549,7 @@ class TorusTransform(ThreeDScene):
         self.play(FadeOut(torus), FadeIn(cylinder), run_time=0.1)
         self.wait(2)
 
+        # cutting the cylinder to a plane
         for iteration in range(total_iterations):
             ii = PI - iteration * (90 * DEGREES) / total_iterations
             new_radius = PI * small_radius / ii
@@ -549,24 +561,13 @@ class TorusTransform(ThreeDScene):
         plane = ParametricSurface(lambda u, v: np.array([u, small_radius, v]), u_range=(-PI * big_radius, PI * big_radius), v_range=(-PI * big_radius, PI * big_radius)).set_color(color=BLUE_D, opacity=0.5)
         self.play(FadeOut(cylinder), FadeIn(plane), run_time=0.1)
         self.wait(2)
-
-        point_a = np.array([-PI, 1, -PI])
-        point_b = np.array([PI, 1, -PI])
-        point_c = np.array([PI, 1, PI])
-        point_d = np.array([-PI, 1, PI])
-
-        line_left = Line3D(point_a, point_d, color=YELLOW_D)
-        line_right = Line3D(point_b, point_c, color=YELLOW_D)
-        line_bottom = Line3D(point_a, point_b, color=RED_D)
-        line_top = Line3D(point_c, point_d, color=RED_D)
-
         self.play(*[FadeIn(lines) for lines in [line_left, line_right]])
         self.wait()
         self.play(*[FadeIn(lines) for lines in [line_bottom, line_top]])
 
         frame = self.camera.frame
         frame.set_euler_angles(theta=0, phi=Pi / 2, gamma=0)
-        
+
         self.embed()
 
     def torus_func(self, u, v, R=3, r=1):

@@ -255,8 +255,6 @@ class ParametricSurface(Surface):
         uv_func: Callable[[float, float], Iterable[float]],
         u_range: tuple[float, float] = (0, 1),
         v_range: tuple[float, float] = (0, 1),
-        color=BLUE_D,
-        opacity=0.5,
         **kwargs
     ):
         self.passed_uv_func = uv_func

@@ -143,22 +143,6 @@ class PlotSetup(Scene):
         self.embed()
 
 
-class TorusTransform(ThreeDScene):
-
-    def construct(self):
-        axes = ThreeDAxes()
-        self.add(axes)
-        
-        torus = Torus(r1=3, r2=1)
-        sphere = Sphere()
-        # self.add(torus)
-        
-        surface_1 = ParametricSurface(lambda u, v: np.array([(3 + np.cos(u)) * np.cos(v), 3 * np.sin(v) * np.sin(u), np.sin(u)]), u_range=(0, TAU), v_range=(0, TAU))
-        
-        self.add(torus, sphere)
-        self.add(surface_1)
-        self.embed()
-
 class IcraCheck(ThreeDScene):
 
     def construct(self):
