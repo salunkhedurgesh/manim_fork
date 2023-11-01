@@ -1,5 +1,8 @@
+import numpy as np
+
 from functions.phd_functions.robot_functions import *
 from functions.phd_functions.functions_epfl import *
+from functions.phd_functions.robots_3r import *
 from manimlib import *
 from numpy import sin, cos, sqrt
 import pandas as pd
@@ -224,7 +227,8 @@ class JacoSlice1(ThreeDScene):
         self.play(FadeIn(robot_top_view))
         self.wait()
         print("Animating frame orientation, scale and position...\n")
-        self.play(frame.animate.set_euler_angles(8.18e-01, 1.15, 0).scale(1.3 / previous_scale).shift(np.array([-6, -3, 4]) - previous_shift), run_time=2)
+        self.play(frame.animate.set_euler_angles(8.18e-01, 1.15, 0).scale(1.3 / previous_scale).shift(
+            np.array([-6, -3, 4]) - previous_shift), run_time=2)
         self.add(ee_trace_2d.shift(DOWN * 0.05))
         self.play(FadeIn(slide_dot))
         self.wait()
@@ -322,7 +326,6 @@ class JacoSlice1(ThreeDScene):
         ee_point_vec.append(ee_point)
         ee_trace_2d.add(Line3D(start=ee_point_vec[-2], end=ee_point_vec[-1], color=RED))
         self.add(ee_trace_2d)
-
 
         self.play(FadeIn(slide_dot))
         self.wait()
@@ -484,7 +487,8 @@ class SliceExplanation(Scene):
             for ii in range(len(thetas_pos)):
                 dot_play_pos = Dot(fill_color=BLUE_D).scale(1.01).move_to(
                     plane_paths.c2p(instance * 10 / 724, thetas_pos[ii]))
-                dot_play_neg = Dot(fill_color=RED_D).scale(0.8).move_to(plane_paths.c2p(instance * 10 / 724, thetas_neg[ii]))
+                dot_play_neg = Dot(fill_color=RED_D).scale(0.8).move_to(
+                    plane_paths.c2p(instance * 10 / 724, thetas_neg[ii]))
                 self.play(*[FadeIn(ii) for ii in [dot_play_pos, dot_play_neg]], run_time=0.1)
 
             dot_play_pos = Dot(fill_color=BLUE_D).scale(1.01).move_to(
@@ -504,10 +508,13 @@ class SliceExplanation(Scene):
         self.play(ScaleInPlace(in_obj, scale_factor=1 / scale_factor))
 
 
-
 class TorusTransform(ThreeDScene):
 
     def construct(self):
+        frame = self.camera.frame
+        theta, phi, gamma = frame.get_theta(), frame.get_phi(), frame.get_gamma()
+        frame.set_euler_angles(theta=-0.55, phi=0.7, gamma=0)
+        frame.move_to(ORIGIN)
         axes = ThreeDAxes()
         axes.x_axis.set_color(color=RED_D)
         axes.y_axis.set_color(color=GREEN_D)
@@ -523,51 +530,132 @@ class TorusTransform(ThreeDScene):
         line_bottom = Line3D(point_a, point_b, color=RED_D)
         line_top = Line3D(point_c, point_d, color=RED_D)
 
-
         big_radius = 1
         small_radius = 1
+        border_buff = 0.1
 
         # formation of torus        
-        torus = ParametricSurface(lambda u, v: self.torus_func(u,v, R=big_radius, r=small_radius), u_range=(0, TAU), v_range=(0, 0.01)).set_color(color=BLUE_D)
+        torus = ParametricSurface(lambda u, v: self.torus_func(u, v, R=big_radius, r=small_radius), u_range=(0, TAU),
+                                  v_range=(0, 0.01)).set_color(color=BLUE_D)
+        torus_right = ParametricSurface(lambda u, v: self.torus_func(u, v, R=big_radius, r=small_radius),
+                                        u_range=(0, TAU), v_range=(TAU - border_buff, TAU)).set_color(color=YELLOW_D)
+        torus_left = ParametricSurface(lambda u, v: self.torus_func(u, v, R=big_radius, r=small_radius),
+                                       u_range=(0, TAU), v_range=(0, border_buff)).set_color(color=YELLOW_D)
         torus.set_reflectiveness(0.5)
 
-        for ii in np.arange(0.01, TAU+0.1, 0.1):
-            new_torus = ParametricSurface(lambda u, v: self.torus_func(u,v, R=big_radius, r=small_radius), u_range=(0, TAU), v_range=(0, ii)).set_color(color=BLUE_D)
-            self.play(Transform(torus, new_torus), run_time=0.05)
+        # Animations
+        self.add(get_background().fix_in_frame())
+
+        for ii in np.arange(0, TAU + 0.4, 0.4):
+            new_torus = ParametricSurface(lambda u, v: self.torus_func(u, v, R=big_radius, r=small_radius),
+                                          u_range=(0, TAU), v_range=(0, ii)).set_color(color=BLUE_D)
+            self.play(Transform(torus, new_torus), run_time=0.1)
         self.wait(2)
+        self.play(frame.animate.set_euler_angles(theta=theta, phi=phi, gamma=gamma))
+        # self.embed()
 
         # cutting the torus to cylinder
-        total_iterations = 25
+        total_iterations = 50
         for iteration in range(total_iterations):
-            ii = PI - iteration * (185 * DEGREES) / total_iterations
+            ii = PI - iteration * (179 * DEGREES) / total_iterations
             new_radius = PI * big_radius / ii
             opacity = 1 - 0.5 * iteration / total_iterations
-            new_torus = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius), u_range=(0, TAU), v_range=(PI - ii, PI + ii)).set_color(color=BLUE_D, opacity=opacity)
-            self.play(Transform(torus, new_torus), run_time=0.05)
-        
-        cylinder = ParametricSurface(lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]), u_range=(-PI * big_radius, PI * big_radius), v_range=(0, TAU)).set_color(color=BLUE_D, opacity=0.5).set_reflectiveness(0.5)
-        self.play(FadeOut(torus), FadeIn(cylinder), run_time=0.1)
+            new_torus = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius),
+                                          u_range=(0, TAU), v_range=(PI - ii, PI + ii)).set_color(color=BLUE_D,
+                                                                                                  opacity=opacity)
+            new_torus_left = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius),
+                                               u_range=(0, TAU), v_range=(
+                PI - ii - border_buff * big_radius / (new_radius), PI - ii)).set_color(color=YELLOW_D, opacity=opacity)
+            new_torus_right = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius),
+                                                u_range=(0, TAU), v_range=(
+                PI + ii, PI + ii + border_buff * big_radius / (new_radius))).set_color(color=YELLOW_D, opacity=opacity)
+            self.play(*[Transform(obj, obj2) for obj, obj2 in
+                        zip([torus, torus_right, torus_left], [new_torus, new_torus_right, new_torus_left])],
+                      run_time=0.1)
+
+        cylinder = ParametricSurface(lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]),
+                                     u_range=(-PI * big_radius, PI * big_radius), v_range=(0, TAU)).set_color(
+            color=BLUE_D, opacity=0.5)
+        cylinder_top = ParametricSurface(lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]),
+                                         u_range=(-PI * big_radius, PI * big_radius),
+                                         v_range=(0, border_buff)).set_color(color=BLUE_D, opacity=0.5)
+        cylinder_bottom = ParametricSurface(
+            lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]),
+            u_range=(-PI * big_radius, PI * big_radius), v_range=(0, -border_buff)).set_color(color=BLUE_D, opacity=0.5)
+        cylinder_left_cover = ParametricSurface(
+            lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]),
+            u_range=(-PI * big_radius - border_buff, -PI * big_radius), v_range=(0, TAU)).set_color(color=YELLOW_D,
+                                                                                                    opacity=0.5)
+        cylinder_right_cover = ParametricSurface(
+            lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]),
+            u_range=(PI * big_radius, PI * big_radius + border_buff), v_range=(0, TAU)).set_color(color=YELLOW_D,
+                                                                                                  opacity=0.5)
+
+        # self.play(FadeOut(torus), FadeIn(cylinder), run_time=0.05)
+        self.play(*[FadeIn(obj) for obj in [cylinder, cylinder_left_cover, cylinder_right_cover]], run_time=0.05)
+        self.remove(torus, torus_left, torus_right)
+        # self.play(FadeOut(torus_left), FadeIn(cylinder_left_cover), run_time=0.05)
+        # self.play(FadeOut(torus_right), FadeIn(cylinder_right_cover), run_time=0.05)
         self.wait(2)
 
         # cutting the cylinder to a plane
+        added_top = False
         for iteration in range(total_iterations):
             ii = PI - iteration * (90 * DEGREES) / total_iterations
             new_radius = PI * small_radius / ii
             z_nudge = (PI - 1 - small_radius) * iteration / total_iterations
             # y_pull = new_radius * cos(v) * iteration / total_iterations
-            new_cylinder = ParametricSurface(lambda u, v: np.array([u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius, (new_radius + z_nudge) * sin(v)]), u_range=(-PI * big_radius, PI * big_radius), v_range=(PI - ii, PI + ii)).set_color(color=BLUE_D, opacity=0.5)
-            self.play(Transform(cylinder, new_cylinder), run_time=0.05)
+            new_cylinder = ParametricSurface(lambda u, v: np.array(
+                [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
+                 (new_radius + z_nudge) * sin(v)]), u_range=(-PI * big_radius, PI * big_radius),
+                                             v_range=(PI - ii, PI + ii)).set_color(color=BLUE_D, opacity=0.5)
+            cylinder_top_cover = ParametricSurface(lambda u, v: np.array(
+                [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
+                 (new_radius + z_nudge) * sin(v)]), u_range=(
+            -PI * big_radius - border_buff, PI * big_radius + border_buff), v_range=(
+            PI - ii - border_buff * small_radius / new_radius, PI - ii)).set_color(color=RED_D, opacity=0.5)
+            cylinder_bottom_cover = ParametricSurface(lambda u, v: np.array(
+                [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
+                 (new_radius + z_nudge) * sin(v)]), u_range=(
+            -PI * big_radius - border_buff, PI * big_radius + border_buff), v_range=(
+            PI + ii, PI + ii + border_buff * small_radius / new_radius)).set_color(color=RED_D, opacity=0.5)
+            cylinder_left_cover2 = ParametricSurface(lambda u, v: np.array(
+                [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
+                 (new_radius + z_nudge) * sin(v)]), u_range=(-PI * big_radius - border_buff, -PI * big_radius),
+                                                     v_range=(PI - ii, PI + ii)).set_color(color=YELLOW_D, opacity=0.5)
+            cylinder_right_cover2 = ParametricSurface(lambda u, v: np.array(
+                [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
+                 (new_radius + z_nudge) * sin(v)]), u_range=(PI * big_radius, PI * big_radius + border_buff),
+                                                      v_range=(PI - ii, PI + ii)).set_color(color=YELLOW_D, opacity=0.5)
 
-        plane = ParametricSurface(lambda u, v: np.array([u, small_radius, v]), u_range=(-PI * big_radius, PI * big_radius), v_range=(-PI * big_radius, PI * big_radius)).set_color(color=BLUE_D, opacity=0.5)
+            if iteration >= total_iterations - 1:
+                z_gap = PI - (new_radius + z_nudge) * abs(sin(PI + ii))
+                self.remove(line_top, line_bottom)
+                line_bottom = Line3D(point_a, point_b, color=RED_D)
+                line_top = Line3D(point_c, point_d, color=RED_D)
+                self.add(line_top.shift(np.array([0, -0.1, -z_gap])), line_bottom.shift(np.array([0, -0.1, z_gap])))
+                # self.embed()
+                # added_top = True
+
+            self.play(*[Transform(obj, obj2) for obj, obj2 in
+                        zip([cylinder, cylinder_right_cover, cylinder_left_cover, cylinder_top, cylinder_bottom],
+                            [new_cylinder, cylinder_right_cover2, cylinder_left_cover2, cylinder_top_cover,
+                             cylinder_bottom_cover])], run_time=0.1)
+
+        plane = ParametricSurface(lambda u, v: np.array([u, small_radius, v]),
+                                  u_range=(-PI * big_radius, PI * big_radius),
+                                  v_range=(-PI * big_radius, PI * big_radius)).set_color(color=BLUE_D, opacity=0.5)
         self.play(FadeOut(cylinder), FadeIn(plane), run_time=0.1)
+        self.remove(line_top, line_bottom)
+        line_bottom = Line3D(point_a, point_b, color=RED_D)
+        line_top = Line3D(point_c, point_d, color=RED_D)
+        self.add(line_top, line_bottom, line_left, line_right)
+        self.remove(cylinder_left_cover, cylinder_right_cover, cylinder_top, cylinder_bottom)
         self.wait(2)
-        self.play(*[FadeIn(lines) for lines in [line_left, line_right]])
-        self.wait()
-        self.play(*[FadeIn(lines) for lines in [line_bottom, line_top]])
 
-        frame = self.camera.frame
-        frame.set_euler_angles(theta=0, phi=Pi / 2, gamma=0)
-
+        # Animating camera frame
+        self.play(frame.animate.set_euler_angles(theta=0, phi=PI / 2, gamma=0).shift([0, 1, 0]))
+        self.wait(2)
         self.embed()
 
     def torus_func(self, u, v, R=3, r=1):
@@ -577,3 +665,77 @@ class TorusTransform(ThreeDScene):
         z_val = r * sin(u)
 
         return np.array([x_val, y_val, z_val])
+
+
+class FlatPlots(Scene):
+
+    def construct(self) -> None:
+
+        xconfig = dict(stroke_width=0.001, opacity=0, include_ticks=False, stroke_color=BLACK)
+        yconfig = dict(stroke_width=0.001, opacity=0, include_ticks=False, stroke_color=BLACK)
+        plot_to_return = Axes(
+            x_range=(-3, 3),
+            y_range=(-3, 3),
+            y_axis_config=yconfig,
+            x_axis_config=xconfig,
+            width=6.28,
+            height=6.28
+        )
+
+        square = Square(side_length=6.28, fill_color=BLUE_D, fill_opacity=0.5, stroke_opacity=0)
+        line_top = Line(square.get_corner(UL), square.get_corner(UR), stroke_color=RED_D)
+        line_bottom = Line(square.get_corner(DL), square.get_corner(DR), stroke_color=RED_D)
+        line_left = Line(square.get_corner(DL), square.get_corner(UL), stroke_color=YELLOW_D)
+        line_right = Line(square.get_corner(DR), square.get_corner(UR), stroke_color=YELLOW_D)
+
+        self.embed()
+
+        critical_points = ImplicitFunction(get_det(robot_type="philippe"), color=WHITE, x_range=(-3.14, 3.14),
+                                           y_range=(-3.14, 3.14))
+        x_label = TexText(r"$\theta_2$").move_to(line_bottom.get_center()).shift(DOWN * 0.3)
+        y_label = TexText(r"$\theta_3$").move_to(line_left.get_center()).shift(LEFT * 0.3)
+
+        aspect_def = TexText(r"""\begin{minipage}{5cm} \centering An aspect is a singularity free region in the joint space of the robot \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        pos_det = TexText(r"""\begin{minipage}{5cm} \centering Aspect with $\det(\mathbf{J}) > 0$ \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        neg_det = TexText(r"""\begin{minipage}{5cm} \centering Aspect with $\det(\mathbf{J}) < 0$ \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        singularities = TexText(r"""\begin{minipage}{5cm} \centering Singularities in the joint space are the locus of critical points of the forward kinematic map $\det(\mathbf{J}) = 0$ \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+
+        neg_dots = Group()
+        pos_dots = Group()
+        for t2 in np.arange(-3.1, 3.14, 0.1):
+            for t3 in np.arange(-3.1, 3.14, 0.1):
+                det_val = -4.5 * sin(t3) * cos(t2) * cos(t3) - 6.0 * sin(t3) * cos(t2) - 2.25 * sin(t3) * cos(
+                    t3) - 3.0 * sin(t3) + 2.25 * cos(t2) * cos(t3) ** 2 + 3.0 * cos(t2) * cos(t3)
+                radius = 0.04
+                if det_val < 0:
+                    neg_dots.add(Dot(fill_color=RED_D, radius=radius).move_to(np.array([t2, t3, 0])))
+                else:
+                    pos_dots.add(Dot(fill_color=GREEN_D, radius=radius).move_to(np.array([t2, t3, 0])))
+
+        self.add(get_background())
+        self.add(square, line_left, line_bottom, line_top, line_right)
+        self.wait()
+        self.play(FadeIn(x_label), FadeIn(y_label))
+        self.wait(2)
+        self.FadeInFadeOut(singularities)
+        self.play(ShowCreation(critical_points), run_time=2)
+        self.wait()
+        self.FadeInFadeOut(aspect_def)
+        self.FadeInFadeOut(pos_det, wait_time=2)
+        self.play(FadeIn(pos_dots))
+        self.add(critical_points)
+        self.wait()
+        self.FadeInFadeOut(neg_det, wait_time=2)
+        self.play(FadeIn(neg_dots))
+        self.add(critical_points)
+        self.wait()
+
+        self.embed()
+
+    def FadeInFadeOut(self, *in_obj, wait_time=3):
+        self.play(*[FadeIn(item) for item in in_obj])
+        self.wait(wait_time)
+        self.play(*[FadeOut(item) for item in in_obj])
+
+    def FadeIt(self, *in_obj):
+        self.play(*[ReplacementTransform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
