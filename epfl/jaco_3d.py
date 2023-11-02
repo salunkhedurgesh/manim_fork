@@ -1,5 +1,4 @@
 import numpy as np
-
 from functions.phd_functions.robot_functions import *
 from functions.phd_functions.functions_epfl import *
 from functions.phd_functions.robots_3r import *
@@ -64,6 +63,22 @@ def get_text():
                  'first_problem': first_problem, 'zeroth_problem2': zeroth_problem2, 'second_choice': second_choice,
                  'second_problem': second_problem, 'third_choice': third_choice, 'third_problem': third_problem,
                  'zeroth_problem3': zeroth_problem3})
+
+
+def get_text_neg():
+    nscs_choice = TexText(
+        r"""\begin{minipage}{5 cm} \centering Let us start with IKS corresponding to $T_5$\end{minipage}""",
+        font_size=36).to_edge(RIGHT, buff=0.5).add_background_rectangle(color=BLACK, opacity=0.8).fix_in_frame()
+
+    nscs_continuous = TexText(
+        r"""\begin{minipage}{5 cm} \centering These paths are continuous and correspond to nonsingular change of solutions.\end{minipage}""",
+        font_size=36).to_edge(RIGHT, buff=0.5).add_background_rectangle(color=BLACK, opacity=0.8).fix_in_frame()
+
+    nscs_repeat = TexText(
+        r"""\begin{minipage}{5 cm} \centering These paths are not repeatable.\end{minipage}""",
+        font_size=36).to_edge(RIGHT, buff=0.5).add_background_rectangle(color=BLACK, opacity=0.8).fix_in_frame()
+
+    return dict({'nscs_choice': nscs_choice, 'nscs_con': nscs_continuous, 'nscs_repeat': nscs_repeat})
 
 
 def get_path_axis():
@@ -132,7 +147,7 @@ class JacoSlice1(ThreeDScene):
         frame.scale(previous_scale)
         frame.shift(previous_shift)
 
-        fixed_background = get_background().fix_in_frame()
+        # fixed_background = get_background().fix_in_frame()
         circle = Circle().fix_in_frame()  # testing fixed_in_frame object to render the plot by side
         # plotting the slice
         df = pd.read_csv("resources/data/jaco_slice_zoomed.csv")
@@ -220,7 +235,7 @@ class JacoSlice1(ThreeDScene):
         show_three = True
 
         # Animations
-        self.add(fixed_background)
+        # self.add(fixed_background)
         self.play(*[FadeIn(item) for item in [group_dot, ee_trace_2d]])
         self.wait()
         # # self.wait()
@@ -411,6 +426,141 @@ class JacoSlice1(ThreeDScene):
         self.play(*[Transform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
 
 
+class JacoNegTraj(ThreeDScene):
+
+    def construct(self) -> None:
+        # setting frame for slice presentation
+        frame = self.camera.frame
+        frame.set_euler_angles(theta=0, phi=0, gamma=0)
+        previous_scale = 1.4
+        previous_shift = LEFT * UP
+        frame.scale(previous_scale)
+        frame.shift(previous_shift)
+
+        df = pd.read_csv("resources/data/jaco_slice_zoomed.csv")
+        back_plane = NumberPlane(x_range=(-3.4, 0), y_range=(-1.85, 2.50)).set_width(3.4)
+        back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
+        group_dot = VGroup()
+
+        for ii in range(0, len(df), 5):
+            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+            group_dot.add(Dot(fill_color=dict_color_code[df['iks'][ii]]).scale(0.19).move_to(back_plane.coords_to_point(df['x'][ii] / 100, df['y'][ii] / 100)))
+        ee_trace_2d = Group()
+        for xx1, yy1, xx2, yy2 in zip([-2.8, -2.8, -1.2, -1.2], [0, 2, 2, 0], [-2.8, -1.2, -1.2, -2.8],
+                                      [2, 2, 0, 0]):
+            ee_trace_2d.add(Line3D(back_plane.c2p(xx1, yy1), back_plane.c2p(xx2, yy2)))
+        ee_trace_2d.shift(UP * 0.05)
+
+        plane_paths = get_path_axis().fix_in_frame()
+        line_y_offset = Line(plane_paths.c2p(0, -3), plane_paths.c2p(0, -3.15)).fix_in_frame()
+        path_length = 10
+        df_n = pd.read_csv("resources/data/saved_data_theta1.csv")
+        df_n2 = pd.read_csv("resources/data/saved_data_neg_theta1.csv")
+        # full_path = []
+        paths = make_paths(df_n, thresh=0.2)
+        full_path2 = Group()
+        first_x = (len(paths[2]) * path_length) / 724
+        second_x = (len(paths[0]) * path_length) / 724
+        third_x = ((len(paths[1]) - len(paths[4])) * path_length) / 724
+
+        print(f"number of paths in positive det are {len(paths)}")
+        for ii in range(len(paths)):
+            print(f"Length of path {ii} is {len(paths[ii])}")
+            for i4 in np.arange(1, len(paths[ii]) - 1):
+                i3 = paths[ii][0] - len(paths[ii]) + 1 + i4
+                full_path2.add(Line(plane_paths.c2p(i3 * path_length / 724, paths[ii][i4]),
+                                    plane_paths.c2p((i3 + 1) * path_length / 724, paths[ii][i4 + 1]),
+                                    stroke_color=BLUE_C, stroke_width=5, stroke_opacity=0.6).fix_in_frame())
+
+        paths2 = make_paths(df_n2, thresh=0.2)
+        full_path22 = Group()
+        print(f"number of paths in negative det are {len(paths2)}")
+        for ii in range(len(paths2)):
+            print(f"Length of path2 {ii} is {len(paths2[ii])}")
+            for i4 in np.arange(1, len(paths2[ii]) - 1):
+                i3 = paths2[ii][0] - len(paths2[ii]) + 1 + i4
+                full_path22.add(Line(plane_paths.c2p(i3 * path_length / 724, paths2[ii][i4]),
+                                     plane_paths.c2p((i3 + 1) * path_length / 724, paths2[ii][i4 + 1]),
+                                     stroke_color=RED_C, stroke_width=5, stroke_opacity=0.6).fix_in_frame())
+
+        # transition lines
+        first_transition = DashedLine(plane_paths.c2p(first_x, -3.5),
+                                      plane_paths.c2p(first_x, 3.5)).fix_in_frame()
+        second_transition = DashedLine(plane_paths.c2p(second_x, -3.5),
+                                       plane_paths.c2p(second_x, 3.5)).fix_in_frame()
+        third_transition = DashedLine(plane_paths.c2p(third_x, -3.5),
+                                      plane_paths.c2p(third_x, 3.5)).fix_in_frame()
+
+        # transition text
+        first_nom = TexText("$(8 \\rightarrow 6)$", font_size=24).move_to(first_transition.get_end()).shift(
+            LEFT * 0.5).fix_in_frame()
+        second_nom = TexText("$(6 \\rightarrow 4)$", font_size=24).move_to(second_transition.get_end()).shift(
+            RIGHT * 0.5).fix_in_frame()
+        third_nom = TexText("$(4 \\rightarrow 8)$", font_size=24).move_to(
+            third_transition.get_end()).fix_in_frame()
+
+        point_plot = Dot().move_to(plane_paths.c2p(0, paths2[1][1])).fix_in_frame()
+        point_plot2 = Dot().move_to(plane_paths.c2p(0, paths2[3][1])).fix_in_frame()
+        point_plot3 = Dot().move_to(plane_paths.c2p(0, paths2[4][1])).fix_in_frame()
+
+        all_texts = get_text_neg()
+
+        # Animations
+        first_robot_faded = get_robot_instance(theta_list=np.array(get_solution(1, paths2[1][1], 0)), offset=0.48,
+                                               show_frame=True, hide_ee=True, opacity=0.25)
+        rob_ins = get_robot_instance(theta_list=np.array(get_solution(1, paths2[1][1], 0)), offset=0.48,
+                                     show_frame=True, hide_ee=True)
+
+        self.play(*[FadeIn(item) for item in [group_dot, ee_trace_2d]])
+        self.wait()
+        self.play(frame.animate.set_euler_angles(8.18e-01, 1.15, 0).scale(1.3 / previous_scale).shift(np.array([-6, -3, 4]) - previous_shift), run_time=2)
+        self.play(*[FadeIn(item) for item in [plane_paths, line_y_offset, first_nom, second_nom, third_nom, first_transition, second_transition, third_transition]])
+        self.wait()
+        self.play(*[FadeIn(path_item) for path_item in [full_path2, full_path22]])
+        self.wait()
+        self.add(first_robot_faded, rob_ins)
+        for item in full_path2:
+            item.shift([0, 0, -0.05])
+        self.FadeIt(*full_path2)
+        self.wait()
+        # self.embed()
+
+        print("Animating NSCS")
+        self.add(TracedPath(point_plot.get_center, stroke_width=5, stroke_color=GOLD_A, time_per_anchor=0.2).fix_in_frame())
+        self.add(TracedPath(point_plot2.get_center, stroke_width=5, stroke_color=GOLD_A, time_per_anchor=0.2).fix_in_frame())
+        self.add(TracedPath(point_plot3.get_center, stroke_width=5, stroke_color=GOLD_A, time_per_anchor=0.2).fix_in_frame())
+        self.FadeInFadeOut(all_texts['nscs_choice'], wait_time=3)
+
+        complete_path_T1 = paths2[3] + paths2[4]
+        new_start = 1
+        removed_point = False
+        for i2 in np.arange(1, min(len(complete_path_T1), len(paths2[1])), 8):
+            if i2 < len(paths2[3]):
+                self.play(*[Transform(obj, obj.move_to(plane_paths.c2p(i2 * path_length / 724, y_coord))) for obj, y_coord in zip([point_plot, point_plot2], [paths2[1][i2], paths2[3][i2]])])
+            else:
+                if not removed_point:
+                    self.remove(point_plot2)
+                    removed_point = True
+                self.play(*[Transform(obj, obj.move_to(plane_paths.c2p(i2 * path_length / 724, y_coord))) for obj, y_coord in zip([point_plot, point_plot3], [paths2[1][i2], paths2[4][new_start]])])
+                new_start += 8
+
+            self.play(Transform(rob_ins, get_robot_instance(theta_list=np.array(get_solution(i2, paths2[1][i2], 0)), offset=0.48, show_frame=True, hide_ee=True)))
+
+        self.wait()
+        self.FadeInFadeOut(all_texts['nscs_con'], wait_time=3)
+        self.FadeInFadeOut(all_texts['nscs_repeat'], wait_time=3)
+
+        self.embed()
+
+    def FadeInFadeOut(self, *in_obj, wait_time=3):
+        self.play(*[FadeIn(item) for item in in_obj])
+        self.wait(wait_time)
+        self.play(*[FadeOut(item) for item in in_obj])
+
+    def FadeIt(self, *in_obj):
+        self.play(*[Transform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
+
+
 class SliceExplanation(Scene):
 
     def construct(self) -> None:
@@ -458,7 +608,7 @@ class SliceExplanation(Scene):
         line_y_offset = Line(plane_paths.c2p(0, -3), plane_paths.c2p(0, -3.15))
 
         # Animations
-        self.add(get_background())
+        # self.add(get_background())
         self.add(back_plane)
         self.play(FadeIn(group_dot))
         self.play(*[FadeIn(item) for item in caption], run_time=3)
@@ -544,7 +694,7 @@ class TorusTransform(ThreeDScene):
         torus.set_reflectiveness(0.5)
 
         # Animations
-        self.add(get_background().fix_in_frame())
+        # self.add(get_background().fix_in_frame())
 
         for ii in np.arange(0, TAU + 0.4, 0.4):
             new_torus = ParametricSurface(lambda u, v: self.torus_func(u, v, R=big_radius, r=small_radius),
@@ -565,10 +715,12 @@ class TorusTransform(ThreeDScene):
                                                                                                   opacity=opacity)
             new_torus_left = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius),
                                                u_range=(0, TAU), v_range=(
-                PI - ii - border_buff * big_radius / (new_radius), PI - ii)).set_color(color=YELLOW_D, opacity=opacity)
+                    PI - ii - border_buff * big_radius / (new_radius), PI - ii)).set_color(color=YELLOW_D,
+                                                                                           opacity=opacity)
             new_torus_right = ParametricSurface(lambda u, v: self.torus_func(u, v, R=new_radius, r=small_radius),
                                                 u_range=(0, TAU), v_range=(
-                PI + ii, PI + ii + border_buff * big_radius / (new_radius))).set_color(color=YELLOW_D, opacity=opacity)
+                    PI + ii, PI + ii + border_buff * big_radius / (new_radius))).set_color(color=YELLOW_D,
+                                                                                           opacity=opacity)
             self.play(*[Transform(obj, obj2) for obj, obj2 in
                         zip([torus, torus_right, torus_left], [new_torus, new_torus_right, new_torus_left])],
                       run_time=0.1)
@@ -612,13 +764,13 @@ class TorusTransform(ThreeDScene):
             cylinder_top_cover = ParametricSurface(lambda u, v: np.array(
                 [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
                  (new_radius + z_nudge) * sin(v)]), u_range=(
-            -PI * big_radius - border_buff, PI * big_radius + border_buff), v_range=(
-            PI - ii - border_buff * small_radius / new_radius, PI - ii)).set_color(color=RED_D, opacity=0.5)
+                -PI * big_radius - border_buff, PI * big_radius + border_buff), v_range=(
+                PI - ii - border_buff * small_radius / new_radius, PI - ii)).set_color(color=RED_D, opacity=0.5)
             cylinder_bottom_cover = ParametricSurface(lambda u, v: np.array(
                 [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
                  (new_radius + z_nudge) * sin(v)]), u_range=(
-            -PI * big_radius - border_buff, PI * big_radius + border_buff), v_range=(
-            PI + ii, PI + ii + border_buff * small_radius / new_radius)).set_color(color=RED_D, opacity=0.5)
+                -PI * big_radius - border_buff, PI * big_radius + border_buff), v_range=(
+                PI + ii, PI + ii + border_buff * small_radius / new_radius)).set_color(color=RED_D, opacity=0.5)
             cylinder_left_cover2 = ParametricSurface(lambda u, v: np.array(
                 [u, new_radius * cos(v) * (iteration - total_iterations) / total_iterations + small_radius,
                  (new_radius + z_nudge) * sin(v)]), u_range=(-PI * big_radius - border_buff, -PI * big_radius),
@@ -688,17 +840,21 @@ class FlatPlots(Scene):
         line_left = Line(square.get_corner(DL), square.get_corner(UL), stroke_color=YELLOW_D)
         line_right = Line(square.get_corner(DR), square.get_corner(UR), stroke_color=YELLOW_D)
 
-        self.embed()
-
         critical_points = ImplicitFunction(get_det(robot_type="philippe"), color=WHITE, x_range=(-3.14, 3.14),
                                            y_range=(-3.14, 3.14))
         x_label = TexText(r"$\theta_2$").move_to(line_bottom.get_center()).shift(DOWN * 0.3)
         y_label = TexText(r"$\theta_3$").move_to(line_left.get_center()).shift(LEFT * 0.3)
 
-        aspect_def = TexText(r"""\begin{minipage}{5cm} \centering An aspect is a singularity free region in the joint space of the robot \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
-        pos_det = TexText(r"""\begin{minipage}{5cm} \centering Aspect with $\det(\mathbf{J}) > 0$ \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
-        neg_det = TexText(r"""\begin{minipage}{5cm} \centering Aspect with $\det(\mathbf{J}) < 0$ \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
-        singularities = TexText(r"""\begin{minipage}{5cm} \centering Singularities in the joint space are the locus of critical points of the forward kinematic map $\det(\mathbf{J}) = 0$ \end{minipage}""", font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        aspect_def = TexText(
+            r"""\begin{minipage}{5cm} \centering An aspect is a singularity free region in the joint space of the robot \end{minipage}""",
+            font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        pos_det = TexText(r"""\begin{minipage}{5cm} \centering Aspect with $\det(\mathbf{J}) > 0$ \end{minipage}""",
+                          font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        neg_det = TexText(r"""\begin{minipage}{5cm} \centering Aspect with $\det(\mathbf{J}) < 0$ \end{minipage}""",
+                          font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
+        singularities = TexText(
+            r"""\begin{minipage}{5cm} \centering Singularities in the joint space are the locus of critical points of the forward kinematic map $\det(\mathbf{J}) = 0$ \end{minipage}""",
+            font_size=36).add_background_rectangle(color=BLACK, opacity=0.8)
 
         neg_dots = Group()
         pos_dots = Group()
@@ -712,7 +868,7 @@ class FlatPlots(Scene):
                 else:
                     pos_dots.add(Dot(fill_color=GREEN_D, radius=radius).move_to(np.array([t2, t3, 0])))
 
-        self.add(get_background())
+        # self.add(get_background())
         self.add(square, line_left, line_bottom, line_top, line_right)
         self.wait()
         self.play(FadeIn(x_label), FadeIn(y_label))
@@ -739,3 +895,90 @@ class FlatPlots(Scene):
 
     def FadeIt(self, *in_obj):
         self.play(*[ReplacementTransform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
+
+
+class ClassCube(Scene):
+
+    def construct(self) -> None:
+        frame = self.camera.frame
+        theta, phi, gamma = frame.get_theta(), frame.get_phi(), frame.get_gamma()
+        frame.set_euler_angles(theta=-0.52, phi=1.22, gamma=0)
+        frame.move_to([0.92, 0.5, 2.46])
+        axes = ThreeDAxes()
+        axes.x_axis.set_color(color=RED_D)
+        axes.y_axis.set_color(color=GREEN_D)
+        # self.add(axes)
+
+        cube_length = 4
+        color = BLUE_D
+        opac = 0.25
+        range_subs = (0, cube_length)
+
+        plane1 = ParametricSurface(lambda u, v: np.array([u, v, 0]), u_range=range_subs, v_range=range_subs,
+                                   color=color, opacity=opac)
+        plane2 = ParametricSurface(lambda u, v: np.array([u, v, cube_length]), u_range=range_subs, v_range=range_subs,
+                                   color=color, opacity=opac)
+        plane3 = ParametricSurface(lambda u, v: np.array([u, 0, v]), u_range=range_subs, v_range=range_subs,
+                                   color=color, opacity=opac)
+        plane4 = ParametricSurface(lambda u, v: np.array([u, cube_length, v]), u_range=range_subs, v_range=range_subs,
+                                   color=color, opacity=opac)
+        plane5 = ParametricSurface(lambda u, v: np.array([0, u, v]), u_range=range_subs, v_range=range_subs,
+                                   color=color, opacity=opac)
+        plane6 = ParametricSurface(lambda u, v: np.array([cube_length, u, v]), u_range=range_subs, v_range=range_subs,
+                                   color=color, opacity=opac)
+
+        # labels
+        fs = 32
+        origin = TexText(r"$(0, 0, 0)$", font_size=fs).shift([0, 0, -0.25]).fix_in_frame()
+        extreme_x = TexText(r"$(100, 0, 0)$", font_size=fs).move_to([cube_length, 0, -0.25]).fix_in_frame()
+        extreme_y = TexText(r"$(0, \dfrac{\pi}{2}, 0)$", font_size=fs).move_to([0, cube_length, -0.25]).fix_in_frame()
+        extreme_z = TexText(r"$(0, 0, \dfrac{\pi}{2})$", font_size=fs).move_to([-0.25, 0, cube_length]).fix_in_frame()
+
+        # self.add(plane1, plane2, plane3, plane4, plane5, plane6)
+        sph_length = 5
+        shift_ratio = cube_length / sph_length
+        sphere_group = Group()
+        border_spheres = Group()
+        for ii in range(sph_length + 1):
+            for jj in range(sph_length + 1):
+                for kk in range(sph_length + 1):
+                    move_to_arr = np.array([ii, jj, kk])
+                    move_to_arr = move_to_arr * shift_ratio
+                    if ii * jj * kk == 0 or max(ii, jj, kk) == sph_length:
+                        border_spheres.add(Sphere(radius=0.1, color=RED_D).move_to(move_to_arr))
+                    else:
+                        sphere_group.add(Sphere(radius=0.1, color=YELLOW_D).move_to(move_to_arr))
+
+        self.wait(2)
+        self.play(*[FadeIn(obj) for obj in [plane1]])
+        self.add(origin, extreme_x, extreme_y, extreme_z)
+        for item in [origin, extreme_x, extreme_y, extreme_z]:
+            item.unfix_from_frame()
+            item.rotate(angle=PI / 2, axis=RIGHT, about_point=item.get_center())
+        self.wait(3)
+        self.play(*[FadeIn(obj) for obj in [plane3]])
+        self.wait(2)
+        self.play(*[FadeIn(obj) for obj in [plane2, plane4, plane6]])
+        self.wait()
+        self.remove(plane3, plane5)
+        self.play(FadeIn(border_spheres))
+        # self.next_slide()
+        self.wait()
+        self.play(*[FadeIn(obj) for obj in [sphere_group, plane3, plane5]])
+        self.wait()
+        # self.next_slide()
+
+        self.play(FadeOut(border_spheres))
+        self.wait()
+        list_animation = [plane2.animate.rotate(angle=PI / 2, axis=RIGHT, about_point=[0, 0, 0]),
+                          plane3.animate.rotate(angle=PI / 2, axis=RIGHT, about_point=[0, 0, 0]),
+                          plane4.animate.rotate(angle=-PI / 2, axis=RIGHT, about_point=[0, cube_length, 0]),
+                          plane5.animate.rotate(angle=PI / 2, axis=DOWN, about_point=[0, 0, 0]),
+                          plane6.animate.rotate(angle=-PI / 2, axis=DOWN, about_point=[cube_length, 0, 0])]
+
+        self.play(*list_animation, run_time=4)
+        self.play(*[FadeOut(obj) for obj in [origin, extreme_x, extreme_y, extreme_z]])
+        self.play(plane2.animate.rotate(angle=PI / 2, axis=RIGHT, about_point=[0, -cube_length, 0]), run_time=2)
+        self.play(frame.animate.scale(1.6).shift([2, 0, -3]))
+        self.wait(2)
+        self.embed()

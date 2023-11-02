@@ -24,18 +24,24 @@ class BackgroundEPFL(Scene):
 
 
 class FrontPage(Scene):
+    """
+    Scene for initial page and its animation to start the presentation
+    """
 
     def construct(self):
-        grid_background = NumberPlane((-11, 11), (-5, 5))
-        title_talk = Tex(r"6R cuspidal robots: Dangers in cobots \\ and how to avoid them", font_size=60,
-                         color=YELLOW_D).shift(UP * 0.5)
+        # objects for front page (big titles and logos)
+        title_talk = Tex(r"6R cuspidal robots: dangers in cobots \\ and how to avoid them", font_size=60,
+                             color=YELLOW_D).shift(UP * 0.5)
         author_title = Tex("Durgesh Salunkhe").move_to(title_talk.get_bottom() + [0, -1, 0])
-        seminar_title = Tex("Seminar at: ").move_to(author_title.get_bottom() + [-1, -1, 0])
+        seminar_title = Tex("Talk at: ").move_to(author_title.get_bottom() + [-1, -1, 0])
+        date = Tex(r"$13^{th}$ Nov, $2023$", font_size=36).move_to(seminar_title.get_bottom() + [1, -0.5, 0])
 
-        ls2n_logo = ImageMobject("ls2n_logo.png").scale(0.25).shift(np.array([5, 2.4, 0]))
-        ecn_logo = ImageMobject("ecn_logo.jpg").scale(0.3).shift(LEFT*5 + UP*2.5)
-        epfl_logo = ImageMobject("epfl_logo.png").scale(0.3).next_to(seminar_title, RIGHT)
-        self.add(ls2n_logo, ecn_logo, epfl_logo)
-        self.add(title_talk, author_title, seminar_title)
+        ls2n_logo_big = ImageMobject("resources/raster_images/ls2n_logo.png").scale(0.5).shift(np.array([5, 2.4, 0]))
+        ecn_logo = ImageMobject("resources/raster_images/ecn_logo.jpg").scale(0.3).shift(LEFT * 5 + UP * 2.5)
+        epfl_logo_big = ImageMobject("resources/raster_images/epfl_logo.png").scale(0.3).next_to(seminar_title, RIGHT)
+
+        # Animations
+        self.add(ls2n_logo_big, ecn_logo, epfl_logo_big)  # adds the objects for front page presentation
+        self.add(title_talk, author_title, seminar_title, date)
 
 

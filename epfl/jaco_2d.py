@@ -80,7 +80,7 @@ class JacDetPlot(ThreeDScene):
             back_plane.c2p(0, my_det6R(start_index, end_index, cur_iter=0, total_iter=50))).fix_in_frame()
 
         jac_cusp = TexText(r"""\begin{minipage}{8cm}\centering JACO robot is a cuspidal robot\end{minipage}""",
-                           font_size=36).to_edge(RIGHT).shift(UP).fix_in_frame()
+                           font_size=36).to_edge(RIGHT, buff=LARGE_BUFF).shift(UP).fix_in_frame()
         jac_cusp1 = TexText(r"""\begin{minipage}{8cm}\begin{itemize} \item Maximum 12 IKS have been found 
         \item The 12 IKS lie in 2 separate aspects \end{itemize}\end{minipage}""", font_size=36).next_to(jac_cusp,
                                                                                                          DOWN).fix_in_frame()
@@ -93,7 +93,7 @@ class JacDetPlot(ThreeDScene):
         rob_ins2 = get_robot_instance(theta_list=point_record[0], opacity=0.25, offset=0, robot_type="jaco")
 
         # animations
-        self.add(get_background("JACO robot is cuspidal").fix_in_frame())
+        # self.add(get_background("JACO robot is cuspidal").fix_in_frame())
         self.add(back_plane, line_y_offset)
         self.FadeInFadeOut(jac_cusp, jac_cusp1)
         self.FadeInFadeOut(title)
@@ -134,16 +134,6 @@ class JacDetPlot(ThreeDScene):
         self.play(*[ReplacementTransform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
 
 
-class RobotTrial(ThreeDScene):
-
-    def construct(self) -> None:
-        point1_comp = [-3.1201, 0.7082, 1.4904, 2.62, -1.9637, -1.8817]
-        rob_ins = get_robot_instance(theta_list=point1_comp, offset=0, robot_type="jaco")
-
-        self.add(rob_ins)
-        self.embed()
-
-
 class Definition(Scene):
     def construct(self):
         # object definition
@@ -153,22 +143,21 @@ class Definition(Scene):
 
         assumption1 = TexText(
             r"""\begin{minipage}{8 cm} \centering $\rightarrow$ There are no joint limits \end{minipage}""",
-            font_size=36).next_to(ans, DOWN)
+            font_size=36).next_to(ans, DOWN * 3)
         assumption2 = TexText(
             r"""\begin{minipage}{8 cm} \centering $\rightarrow$ Collision constraints are 
             not considered \end{minipage}""", font_size=36).next_to(assumption1, DOWN * 1.2)
 
         # animations
-        self.add(get_background("Definition"))
+        # self.add(get_background("Definition"))
         self.play(FadeIn(toc))
         self.wait()
         # self.next_slide()
         self.play(FadeIn(ans))
-        self.wait()
+        self.wait(3)
         # self.next_slide()
-        self.play(FadeIn(assumption1))
-        self.play(FadeIn(assumption2))
-        self.wait()
+        self.play(FadeIn(assumption1), FadeIn(assumption2))
+        self.wait(3)
         # self.next_slide()
 
 
@@ -210,7 +199,7 @@ class Robot2R(Scene):
 
         # Animations
 
-        self.add(get_background())
+        # self.add(get_background())
         self.add(dot_js.copy())
         self.add(plot_joint_space, labels, x_label2, y_label2, dot_js)
         self.wait()

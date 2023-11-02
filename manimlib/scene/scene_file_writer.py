@@ -388,6 +388,7 @@ class SceneFileWriter(object):
 
     def add_sound_to_video(self) -> None:
         movie_file_path = self.get_movie_file_path()
+        module_directory = self.output_directory or self.get_default_module_directory()
         stem, ext = os.path.splitext(movie_file_path)
         sound_file_path = stem + ".wav"
         # Makes sure sound file length will match video file
