@@ -47,6 +47,12 @@ class PlotSetup(ThreeDScene):
         joint_dot = Dot(fill_color=PURPLE_D).move_to(plot_joint_space.c2p(first_theta_list[0], first_theta_list[1]))
         work_dot = Dot(fill_color=RED_D).move_to(plot_work_space.c2p(first_rho, first_z))
 
+        # text for graphs
+        text_joint_space = TexText("joint space", font_size=36).next_to(plot_joint_space, DOWN * 3)
+        text_conic_space = TexText(r"$c_3s_3$ plane \\$c_3 \gets \cos\theta_3, s_3 \gets \sin\theta_3$", font_size=36).next_to(plot_conic_space, DOWN * 3)
+        text_work_space = TexText(r"work space projection \\on $\rho$-$z$ plane \\($\rho = \sqrt{x^2 + y^2}$)", font_size=36).next_to(plot_work_space, DOWN * 3)
+
+
         # iks = get_ikin(theta_list=[-3, -0.5])
         # print(iks)
         iks = [[0.716267677272732, -0.742115942207296, 2.6294267416438872],
@@ -61,9 +67,12 @@ class PlotSetup(ThreeDScene):
         start_position = Dot(fill_color=RED_D).move_to(plot_work_space.c2p(rho, z))
 
         # Animations
-        self.add(get_background().fix_in_frame())
+        # self.add(get_background().fix_in_frame())
         for obj in [plot_joint_space, plot_conic_space, plot_work_space, box_js, box_cs, box_ws]:
             self.add(obj.fix_in_frame())
+
+        for obj in [text_joint_space, text_conic_space, text_work_space]:
+            self.play(FadeIn(obj.fix_in_frame()))
 
         for obj in [critical_points.match_plot(plot_joint_space), critical_value, circle, conic_plot]:
             self.play(ShowCreation(obj.fix_in_frame()))
@@ -224,7 +233,7 @@ class AnimateRobot3R(ThreeDScene):
         rob_ins = get_robot_instance(theta_list=iks[0], robot_type="philippe", offset=0)
 
         # Animations
-        self.add(get_background().fix_in_frame())
+        # self.add(get_background().fix_in_frame())
         self.play(FadeIn(rob_ins))
         self.wait()
         self.embed()

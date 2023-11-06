@@ -5,6 +5,7 @@ from functions.phd_functions.robots_3r import *
 from manimlib import *
 from numpy import sin, cos, sqrt
 import pandas as pd
+from manim_slides.slide import Slide, ThreeDSlide
 
 """
 File where experiments related to the plotting of 2D slice of the workspace of 6R robots will be conducted
@@ -230,6 +231,13 @@ class JacoSlice1(ThreeDScene):
             RIGHT * 0.5).fix_in_frame()
         third_nom = TexText("$(4 \\rightarrow 8)$", font_size=24).move_to(third_transition.get_end()).fix_in_frame()
 
+        t1 = TexText(r"$T_1$", font_size=36).move_to(plane_paths.c2p(7, 3)).fix_in_frame()
+        t2 = TexText(r"$T_2$", font_size=36).move_to(plane_paths.c2p(7, 2)).fix_in_frame()
+        t3t4 = TexText(r"$T_3$, $T_4$", font_size=36).move_to(plane_paths.c2p(1, 0.5)).fix_in_frame()
+        t5 = TexText(r"$T_5$", font_size=36).move_to(plane_paths.c2p(7, 0.5)).fix_in_frame()
+        t6 = TexText(r"$T_6$", font_size=36).move_to(plane_paths.c2p(7, -1.1)).fix_in_frame()
+        t7t8 = TexText(r"$T_7$, $T_8$", font_size=36).move_to(plane_paths.c2p(1, -2.5)).fix_in_frame()
+
         # all text objects
         all_texts = get_text()
         show_three = True
@@ -269,6 +277,7 @@ class JacoSlice1(ThreeDScene):
         # animations for the plots
         print("Animating path fade in...\n")
         self.play(*[FadeIn(path_item) for path_item in [full_path2, full_path22]])
+        self.play(*[FadeIn(obj) for obj in [t1, t2, t3t4, t5, t6, t7t8]])
         self.wait()
         self.FadeInFadeOut(all_texts['four_choices'])
         self.FadeIt(*full_path22)
@@ -503,6 +512,13 @@ class JacoNegTraj(ThreeDScene):
         point_plot2 = Dot().move_to(plane_paths.c2p(0, paths2[3][1])).fix_in_frame()
         point_plot3 = Dot().move_to(plane_paths.c2p(0, paths2[4][1])).fix_in_frame()
 
+        t1 = TexText(r"$T_1$", font_size=36).move_to(plane_paths.c2p(7, 3)).fix_in_frame()
+        t2 = TexText(r"$T_2$", font_size=36).move_to(plane_paths.c2p(7, 2)).fix_in_frame()
+        t3t4 = TexText(r"$T_3$, $T_4$", font_size=36).move_to(plane_paths.c2p(1, 0.5)).fix_in_frame()
+        t5 = TexText(r"$T_5$", font_size=36).move_to(plane_paths.c2p(7, 0.5)).fix_in_frame()
+        t6 = TexText(r"$T_6$", font_size=36).move_to(plane_paths.c2p(7, -1.1)).fix_in_frame()
+        t7t8 = TexText(r"$T_7$, $T_8$", font_size=36).move_to(plane_paths.c2p(1, -2.5)).fix_in_frame()
+
         all_texts = get_text_neg()
 
         # Animations
@@ -517,6 +533,7 @@ class JacoNegTraj(ThreeDScene):
         self.play(*[FadeIn(item) for item in [plane_paths, line_y_offset, first_nom, second_nom, third_nom, first_transition, second_transition, third_transition]])
         self.wait()
         self.play(*[FadeIn(path_item) for path_item in [full_path2, full_path22]])
+        self.add(t1, t2, t3t4, t5, t6, t7t8)
         self.wait()
         self.add(first_robot_faded, rob_ins)
         for item in full_path2:
@@ -534,17 +551,19 @@ class JacoNegTraj(ThreeDScene):
         complete_path_T1 = paths2[3] + paths2[4]
         new_start = 1
         removed_point = False
-        for i2 in np.arange(1, min(len(complete_path_T1), len(paths2[1])), 8):
+        for i2 in np.arange(1, min(len(complete_path_T1), len(paths2[1])) + 8, 8):
+            i2 = min(i2, min(len(complete_path_T1), len(paths2[1])) - 1)
             if i2 < len(paths2[3]):
-                self.play(*[Transform(obj, obj.move_to(plane_paths.c2p(i2 * path_length / 724, y_coord))) for obj, y_coord in zip([point_plot, point_plot2], [paths2[1][i2], paths2[3][i2]])])
+                self.play(*[Transform(obj, obj.move_to(plane_paths.c2p(i2 * path_length / 724, y_coord))) for obj, y_coord in zip([point_plot, point_plot2], [paths2[1][i2], paths2[3][i2]])], run_time=0.05)
             else:
                 if not removed_point:
                     self.remove(point_plot2)
                     removed_point = True
-                self.play(*[Transform(obj, obj.move_to(plane_paths.c2p(i2 * path_length / 724, y_coord))) for obj, y_coord in zip([point_plot, point_plot3], [paths2[1][i2], paths2[4][new_start]])])
+                self.play(*[Transform(obj, obj.move_to(plane_paths.c2p(i2 * path_length / 724, y_coord))) for obj, y_coord in zip([point_plot, point_plot3], [paths2[1][i2], paths2[4][new_start]])], run_time=0.05)
                 new_start += 8
+                new_start = min(new_start, len(paths2[4]) - 2)
 
-            self.play(Transform(rob_ins, get_robot_instance(theta_list=np.array(get_solution(i2, paths2[1][i2], 0)), offset=0.48, show_frame=True, hide_ee=True)))
+            self.play(Transform(rob_ins, get_robot_instance(theta_list=np.array(get_solution(i2, paths2[1][i2], 0)), offset=0.48, show_frame=True, hide_ee=True)), run_time=0.05)
 
         self.wait()
         self.FadeInFadeOut(all_texts['nscs_con'], wait_time=3)
@@ -897,7 +916,7 @@ class FlatPlots(Scene):
         self.play(*[ReplacementTransform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
 
 
-class ClassCube(Scene):
+class ClassCube(ThreeDScene):
 
     def construct(self) -> None:
         frame = self.camera.frame
@@ -929,12 +948,16 @@ class ClassCube(Scene):
 
         # labels
         fs = 32
+        ls = 54
         origin = TexText(r"$(0, 0, 0)$", font_size=fs).shift([0, 0, -0.25]).fix_in_frame()
         extreme_x = TexText(r"$(100, 0, 0)$", font_size=fs).move_to([cube_length, 0, -0.25]).fix_in_frame()
         extreme_y = TexText(r"$(0, \dfrac{\pi}{2}, 0)$", font_size=fs).move_to([0, cube_length, -0.25]).fix_in_frame()
         extreme_z = TexText(r"$(0, 0, \dfrac{\pi}{2})$", font_size=fs).move_to([-0.25, 0, cube_length]).fix_in_frame()
+        label_d5 = TexText(r"$d_5$", font_size=ls, color=YELLOW_D).move_to([cube_length / 2, 0, -0.35]).fix_in_frame()
+        label_alpha3 = TexText(r"$\alpha_3$", font_size=ls, color=YELLOW_D).move_to([-0.35, cube_length, cube_length / 2]).fix_in_frame()
+        label_alpha4 = TexText(r"$\alpha_4$", font_size=ls, color=YELLOW_D).move_to([-0.35, cube_length / 2, 0]).fix_in_frame()
 
-        # self.add(plane1, plane2, plane3, plane4, plane5, plane6)
+        # Generating spheres
         sph_length = 5
         shift_ratio = cube_length / sph_length
         sphere_group = Group()
@@ -951,15 +974,15 @@ class ClassCube(Scene):
 
         self.wait(2)
         self.play(*[FadeIn(obj) for obj in [plane1]])
+        self.wait()
+        self.play(*[FadeIn(obj) for obj in [plane2, plane3, plane4, plane5, plane6]])
+        self.wait()
         self.add(origin, extreme_x, extreme_y, extreme_z)
-        for item in [origin, extreme_x, extreme_y, extreme_z]:
+        self.add(label_d5, label_alpha3, label_alpha4)
+        for item in [origin, extreme_x, extreme_y, extreme_z, label_d5, label_alpha3, label_alpha4]:
             item.unfix_from_frame()
             item.rotate(angle=PI / 2, axis=RIGHT, about_point=item.get_center())
         self.wait(3)
-        self.play(*[FadeIn(obj) for obj in [plane3]])
-        self.wait(2)
-        self.play(*[FadeIn(obj) for obj in [plane2, plane4, plane6]])
-        self.wait()
         self.remove(plane3, plane5)
         self.play(FadeIn(border_spheres))
         # self.next_slide()
@@ -970,15 +993,148 @@ class ClassCube(Scene):
 
         self.play(FadeOut(border_spheres))
         self.wait()
-        list_animation = [plane2.animate.rotate(angle=PI / 2, axis=RIGHT, about_point=[0, 0, 0]),
+        list_animation = [plane2.animate.rotate(angle=PI / 2, axis=UP, about_point=[cube_length, 0, 0]),
                           plane3.animate.rotate(angle=PI / 2, axis=RIGHT, about_point=[0, 0, 0]),
                           plane4.animate.rotate(angle=-PI / 2, axis=RIGHT, about_point=[0, cube_length, 0]),
                           plane5.animate.rotate(angle=PI / 2, axis=DOWN, about_point=[0, 0, 0]),
                           plane6.animate.rotate(angle=-PI / 2, axis=DOWN, about_point=[cube_length, 0, 0])]
 
         self.play(*list_animation, run_time=4)
+        self.play(plane2.animate.rotate(angle=PI / 2, axis=UP, about_point=[cube_length * 2, 0, 0]), run_time=1)
         self.play(*[FadeOut(obj) for obj in [origin, extreme_x, extreme_y, extreme_z]])
-        self.play(plane2.animate.rotate(angle=PI / 2, axis=RIGHT, about_point=[0, -cube_length, 0]), run_time=2)
+        self.wait(0.5)
+        # self.play(*[Rotate(obj, axis=LEFT, about_point=obj.get_center(), angle=PI / 2) for obj in [label_d5, label_alpha3, label_alpha4]])
+        self.play(*[FadeOut(obj) for obj in [label_d5, label_alpha3, label_alpha4]])
+        self.wait(0.5)
+
         self.play(frame.animate.scale(1.6).shift([2, 0, -3]))
+        for plane_iter in [plane1, plane4, plane5]:
+            plane_iter.set_opacity(0.25)
         self.wait(2)
+        self.play(FadeOut(sphere_group))
+        self.wait()
+        prev_zoom = frame.get_scale()
+        self.play(frame.animate.set_euler_angles(theta=0, phi=0, gamma=0).scale(1.75 / prev_zoom).move_to([7, 2, -1]))
+        self.wait()
+
         self.embed()
+
+
+class ClassCubePlanar(Scene):
+
+    def construct(self) -> None:
+
+        # squares
+        square_one = self.my_square().to_edge(LEFT)
+        square_two = square_one.copy().next_to(square_one, RIGHT, buff=0.01)
+        square_three = square_one.copy().next_to(square_two, RIGHT, buff=0.01)
+        square_four = square_one.copy().next_to(square_three, RIGHT, buff=0.01)
+        square_five = square_two.copy().next_to(square_two, UP, buff=0.01)
+        square_six = square_two.copy().next_to(square_two, DOWN, buff=0.01)
+
+        # edges
+        wrist_robots_edge_left = Line(square_one.get_corner(UL), square_one.get_corner(DL), stroke_color=YELLOW_D)
+        wrist_robots_edge_right = Line(square_four.get_corner(UR), square_four.get_corner(DR), stroke_color=YELLOW_D)
+        ur5_edge = Line(square_two.get_corner(UL), square_two.get_corner(UR), stroke_color=GREEN_D)
+        offset_edge_up = Line(square_five.get_corner(UL), square_five.get_corner(UR), stroke_color=PINK)
+        offset_edge_down = Line(square_four.get_corner(UL), square_four.get_corner(UR), stroke_color=PINK)
+
+        # labels
+        cube_length = square_one.get_width()
+        ls = 42
+        label_d5 = TexText(r"$d_5$", font_size=ls, color=YELLOW_D).move_to(np.array([0, -cube_length / 2, 0]) + square_two.get_center())
+        label_alpha3 = TexText(r"$\alpha_3$", font_size=ls, color=YELLOW_D).move_to(np.array([cube_length / 2, cube_length, 0]) + square_two.get_center())
+        label_alpha4 = TexText(r"$\alpha_4$", font_size=ls, color=YELLOW_D).move_to(np.array([-cube_length / 2, 0, 0]) + square_two.get_center())
+
+        # coordinate labels
+        buff = cube_length / 10
+        fs = 30
+        label_zero = TexText(r"$0$", font_size=fs).move_to(square_two.get_corner(DL) + np.array([-buff, -buff, 0]))
+        label_hundred = TexText(r"$100$", font_size=fs).move_to(square_two.get_corner(DR) + np.array([buff, -buff, 0]))
+        label_pi2 = TexText(r"$\dfrac{\pi}{2}$", font_size=fs).move_to(square_two.get_corner(UL) + np.array([-buff, 0, 0]))
+        label_zero_alpha = TexText(r"$0$", font_size=fs).move_to(square_two.get_corner(UR) + np.array([buff, buff, 0]))
+        label_pi22 = TexText(r"$\dfrac{\pi}{2}$", font_size=fs).move_to(square_five.get_corner(UR) + np.array([buff, 0, 0]))
+
+        # stars
+        jaco_buff = 55 * cube_length/ 90
+        dot_orth_wrist = Dot().move_to(square_one.get_corner(UL))
+        dot_jaco = Dot().move_to(square_four.get_corner(UL) + np.array([jaco_buff, -jaco_buff, 0]))
+        # Dashed line to jaco point
+        edge_vector = square_four.get_edge_center(LEFT)
+        edge_vector2 = square_four.get_edge_center(DOWN)
+        jaco_vector = dot_jaco.get_center()
+        dashed_line1 = DashedLine(np.array([edge_vector[0], jaco_vector[1], 0]), dot_jaco.get_center())
+        dashed_line2 = DashedLine(dot_jaco.get_center(), np.array([jaco_vector[0], edge_vector2[1], 0]))
+        jaco_dashed_lines = Group(dashed_line1, dashed_line2)
+
+        # comments
+        degenerate_robots = TexText(r"degenerate robots \\ $\det(\mathbf{J}) = 0$", font_size=fs).move_to(square_six.get_center())
+        wrist_partitioned_orth = TexText(r"""\begin{minipage}{2.5 cm}\centering wrist-partitioned robots with orthogonal wrist \end{minipage}""", font_size=fs).move_to(square_one.get_center() + UP * cube_length)
+        wrist_partitioned_nonorth = TexText(r"""\begin{minipage}{2.5 cm}\centering wrist-partitioned robots \end{minipage}""", font_size=fs).move_to(square_four.get_corner(DR) + (DOWN * 0.2) * cube_length)
+        wrist_partitioned_offset = TexText(r"""\begin{minipage}{2.5 cm}\centering robots with an offset in the wrist \end{minipage}""", font_size=fs).move_to(square_five.get_center() + RIGHT * 1.2 * cube_length)
+        ur5_structure = TexText(r"""\begin{minipage}{2.5 cm}\centering UR5 like robots \end{minipage}""", font_size=fs).move_to(square_two.get_edge_center(UP) + UP * 0.2)
+        jaco_structure = TexText(r"""\begin{minipage}{2 cm}\centering Jaco Gen2 like robots \end{minipage}""", font_size=fs).move_to(dot_jaco.get_center() + LEFT)
+
+        # image objects
+        image_path = "resources/raster_images/"
+        image_kr5 = ImageMobject(image_path + "kuka_kr5.png").to_edge(RIGHT)
+        image_jaco = ImageMobject(image_path + "jaco.png").to_edge(RIGHT)
+        image_crx = ImageMobject(image_path + "crx.png").to_edge(RIGHT, buff=LARGE_BUFF)
+        image_ur5 = ImageMobject(image_path + "ur5.png").to_edge(RIGHT)
+
+        # transformed images
+        image_kr52 = image_kr5.copy().move_to(square_one.get_center()).scale(cube_length / image_kr5.get_width())
+        image_ur52 = image_ur5.copy().move_to(square_five.get_center()).scale(cube_length / image_ur5.get_height() / 1.5)
+        image_crx2 = image_crx.copy().move_to(wrist_partitioned_offset.get_center() + RIGHT * 1.6).scale(cube_length / image_crx.get_height())
+        image_jaco2 = image_jaco.copy().move_to(jaco_structure.get_center() + DOWN * 2).scale(cube_length / image_jaco.get_height())
+
+        self.add(square_one, square_two, square_three, square_four, square_five, square_six)
+        self.add(label_d5, label_alpha3, label_alpha4)
+        self.add(label_zero, label_zero_alpha, label_hundred, label_pi2, label_pi22)
+
+        self.wait(3)
+
+        self.play(FadeIn(square_six.set_fill(color=RED_D)))
+        self.wait()
+        self.play(FadeIn(degenerate_robots))
+        self.wait()
+
+        self.play(FadeIn(dot_orth_wrist))
+        self.wait()
+        self.play(FadeIn(wrist_partitioned_orth), FadeIn(image_kr5))
+        self.wait()
+        self.play(ReplacementTransform(image_kr5, image_kr52))
+        self.wait()
+
+        self.play(FadeIn(dot_jaco))
+        self.play(ShowCreation(jaco_dashed_lines))
+        self.wait()
+        self.play(FadeIn(jaco_structure), FadeIn(image_jaco))
+        self.wait()
+        self.play(ReplacementTransform(image_jaco, image_jaco2))
+        self.wait()
+
+        self.play(FadeIn(wrist_robots_edge_right), FadeIn(wrist_robots_edge_left))
+        self.wait()
+        self.play(FadeIn(wrist_partitioned_nonorth))
+
+
+        self.play(FadeIn(offset_edge_up), FadeIn(offset_edge_down))
+        self.wait()
+        self.play(FadeIn(wrist_partitioned_offset), FadeIn(image_crx))
+        self.wait()
+        self.play(ReplacementTransform(image_crx, image_crx2))
+        self.wait()
+
+        self.play(FadeIn(ur5_edge))
+        self.wait()
+        self.play(FadeIn(ur5_structure), FadeIn(image_ur5))
+        self.wait()
+        self.play(ReplacementTransform(image_ur5, image_ur52))
+        self.wait()
+
+        # self.add(wrist_partitioned_orth, wrist_partitioned_nonorth, wrist_partitioned_offset, jaco_structure, ur5_structure)
+        self.embed()
+
+    def my_square(self):
+        return Square(side_length=2.3, fill_opacity=0.25, fill_color=BLUE_D, stroke_opacity=0)

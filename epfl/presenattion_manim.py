@@ -14,8 +14,8 @@ class BasicExample(Slide):
         self.play(ShowCreation(circle2))
         self.next_slide()
 
-        self.start_loop()  # Start loop
+        # self.start_loop()  # Start loop
         self.play(MoveAlongPath(dot, circle), run_time=2, rate_func=linear)
-        self.end_loop()  # This will loop until user inputs a key
+        # self.end_loop()  # This will loop until user inputs a key
 
         self.play(dot.animate.move_to(ORIGIN))

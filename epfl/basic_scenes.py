@@ -36,7 +36,7 @@ class FrontPage(Scene):
         seminar_title = Tex("Talk at: ").move_to(author_title.get_bottom() + [-1, -1, 0])
         date = Tex(r"$13^{th}$ Nov, $2023$", font_size=36).move_to(seminar_title.get_bottom() + [1, -0.5, 0])
 
-        ls2n_logo_big = ImageMobject("resources/raster_images/ls2n_logo.png").scale(0.5).shift(np.array([5, 2.4, 0]))
+        ls2n_logo_big = ImageMobject("resources/raster_images/ls2n_logo.png").scale(0.2).shift(np.array([5, 2.5, 0]))
         ecn_logo = ImageMobject("resources/raster_images/ecn_logo.jpg").scale(0.3).shift(LEFT * 5 + UP * 2.5)
         epfl_logo_big = ImageMobject("resources/raster_images/epfl_logo.png").scale(0.3).next_to(seminar_title, RIGHT)
 

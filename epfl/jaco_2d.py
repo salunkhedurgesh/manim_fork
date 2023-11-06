@@ -280,5 +280,149 @@ class Robot2R(Scene):
         self.play(*[FadeIn(obj) for obj in [mirror_link1, mirror_link2, joint2, joint1]])
 
 
+class ExplainingConfiguration(Scene):
+
+    def construct(self):
+        link_lengths = [2, 3]
+        offset = np.array([0, -1, 0])
+        theta1, theta2 = 55 * DEGREES, -60 * DEGREES
+        l1, l2 = link_lengths
+        point1 = np.array([0, 0, 0]) + offset
+        point2 = point1 + np.array([l1 * cos(theta1), l1 * sin(theta1), 0])
+        ee_point = point2 + np.array([l2 * cos(theta1 + theta2), l2 * sin(theta1 + theta2), 0])
+        joint1 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(point1)
+        joint2 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(point2)
+        ee = Dot().move_to(ee_point)
+
+        link1 = Line(point1, point2)
+        link2 = Line(point2, ee_point)
+        mirror_ee_point = ee_point - offset
+        mirroring_line = Line(-3 * mirror_ee_point, 3 * mirror_ee_point, stroke_width=0.5, stroke_color=YELLOW).shift(offset)
+        axis_config = dict(include_ticks=True, stroke_color=WHITE)
+        plot_joint_space, labels = get_small_plot(edge=LEFT, label=True, xconfig=axis_config, yconfig=axis_config, only_labels=True)
+        x_label2 = TexText(r"""$\theta_1$""", font_size=36).next_to(plot_joint_space.x_axis, DOWN * 0.5).shift(RIGHT * 1.5)
+        y_label2 = TexText(r"""$\theta_2$""", font_size=36).next_to(plot_joint_space.y_axis).rotate(np.pi / 2).shift(UP * 1.7 + LEFT * 0.8)
+        singularity_curves = Group()
+        for val in [-PI, 0, PI]:
+            singularity_curves.add(plot_joint_space.get_graph(lambda x: val).set_color(color=BLUE_D))
+
+        dot_js = Dot(fill_color=PURPLE).move_to(plot_joint_space.c2p(theta1, theta2))
+
+        # text objects
+        elbow_up = TexText("Elbow Up configuration", font_size=42).move_to(np.array([2, 2, 0]))
+        elbow_down = TexText("Elbow Down configuration", font_size=42).move_to(np.array([2, -2.5, 0]))
+        singularity = TexText(
+            r"""\begin{minipage}{5 cm}\centering A singular configuration is met while changing IKS \end{minipage}""",
+            font_size=36).to_edge(RIGHT, buff=LARGE_BUFF).add_background_rectangle(color=BLACK, opacity=0.8).fix_in_frame()
+        singularity_curves_text = TexText("singularity curves").to_edge(LEFT, buff=LARGE_BUFF).shift(UP).add_background_rectangle(color=BLACK, opacity=1)
+
+        # Animations
+
+        # self.add(get_background())
+        self.add(dot_js.copy())
+        self.add(plot_joint_space, labels, x_label2, y_label2, dot_js, singularity_curves)
+        self.remove(plot_joint_space.y_axis)
+        self.add(link1, link2, joint1, joint2, ee)
+        theta1_mirror, theta2_mirror = self.draw_mirror(point1, point2, ee_point, l1, _add_obj=False)
+        self.wait()
+        mirrored_robot = self.draw_mirror(point1, point2, ee_point, l1, _add_obj=True, _give_obj=True)
+        self.add(mirrored_robot)
+        self.wait()
+        self.play(FadeIn(elbow_up))
+        self.wait()
+        self.play(FadeIn(elbow_down))
+        self.wait()
+
+
+        pause = False
+        last_sign = theta2
+        self.add(TracedPath(dot_js.get_center, stroke_width=3, stroke_color=GOLD_A))
+        for ii in np.linspace(theta1, 105 * DEGREES, 20):
+            jj = theta2
+            new_point2 = point1 + np.array([l1 * cos(ii), l1 * sin(ii), 0])
+            new_ee_point = new_point2 + np.array([l2 * cos(ii + jj), l2 * sin(ii + jj), 0])
+            new_mirrored_robot = self.draw_mirror(point1, new_point2, new_ee_point, l1, _add_obj=True, _give_obj=True)
+
+            stroke_color = WHITE
+            temp_link1 = Line(point1, new_point2, stroke_color=stroke_color)
+            temp_link2 = Line(new_point2, new_ee_point, stroke_color=stroke_color)
+            temp_joint2 = joint2.copy().move_to(new_point2)
+            temp_ee = ee.copy().move_to(new_ee_point)
+            temp_dotjs = dot_js.copy().move_to(plot_joint_space.c2p(ii, jj))
+
+            self.play(*[Transform(obj1, obj2) for obj1, obj2 in zip([link1, link2, joint2, ee, dot_js, mirrored_robot], [temp_link1, temp_link2, temp_joint2, temp_ee, temp_dotjs, new_mirrored_robot])], run_time=0.2)
+
+        self.play(elbow_up.animate.shift(LEFT + UP * 1.1), elbow_down.animate.shift(RIGHT + UP))
+        self.wait(2)
+        self.play(elbow_up.copy().scale(0.8).animate.move_to(plot_joint_space.c2p(0, PI / 2)), elbow_down.copy().scale(0.8).animate.move_to(plot_joint_space.c2p(0, -PI / 2)))
+        self.wait()
+        self.embed()
+
+    def FadeInFadeOut(self, *in_obj, wait_time=3):
+        self.play(*[FadeIn(item) for item in in_obj])
+        self.wait(wait_time)
+        self.play(*[FadeOut(item) for item in in_obj])
+
+    def FadeIt(self, *in_obj):
+        self.play(*[Transform(k2, k2.copy().set_opacity(0.2)) for k2 in in_obj])
+
+
+    def draw_mirror(self, point1, point2, ee_point, l1, _add_obj=False, _give_obj=False):
+
+        alpha = angle_between_vectors(ee_point - point1, point2 - point1)
+        beta = angle_between_vectors(RIGHT, ee_point - point1)
+        theta1_mirror = -(alpha - beta)
+        mirror_point2 = point1 + np.array([l1 * cos(theta1_mirror), l1 * sin(theta1_mirror), 0])
+        new_point1 = np.array([l1 * cos(theta1_mirror), l1 * sin(theta1_mirror), 0])
+        theta2_mirror = angle_between_vectors(new_point1, ee_point - (point1 + new_point1))
+
+        if not _add_obj and not _give_obj:
+            return [theta1_mirror, theta2_mirror]
+
+        joint2 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(mirror_point2)
+        mirror_link1 = DashedLine(point1, mirror_point2)
+        mirror_link2 = DashedLine(mirror_point2, ee_point)
+        joint1 = Circle(radius=0.2, fill_color=BLACK, fill_opacity=1).move_to(point1)
+
+        if _give_obj:
+            return Group(mirror_link1, mirror_link2, joint2, joint1)
+
+        self.play(*[FadeIn(obj) for obj in [mirror_link1, mirror_link2, joint2, joint1]])
+
+
+class ShowEightConfigurations(Scene):
+
+    def construct(self) -> None:
+
+        # images
+        image_path = "resources/raster_images/"
+        scale_image = 0.67
+        image_000 = ImageMobject(image_path + "000.png").scale(scale_image).to_corner(UL)
+        image_001 = ImageMobject(image_path + "001.png").scale(scale_image).next_to(image_000, RIGHT)
+        image_011 = ImageMobject(image_path + "011.png").scale(scale_image).next_to(image_001, RIGHT)
+        image_111 = ImageMobject(image_path + "111.png").scale(scale_image).next_to(image_011, RIGHT)
+        image_100 = ImageMobject(image_path + "100.png").scale(scale_image).next_to(image_000, DOWN * 4)
+        image_110 = ImageMobject(image_path + "110.png").scale(scale_image).next_to(image_100, RIGHT)
+        image_010 = ImageMobject(image_path + "010.png").scale(scale_image).next_to(image_110, RIGHT)
+        image_101 = ImageMobject(image_path + "101.png").scale(scale_image).next_to(image_010, RIGHT)
+
+        # texts
+        fs = 30
+        text_000 = TexText(r"RIGHT-DOWN-FLIP", font_size=fs).next_to(image_000, DOWN)
+        text_001 = TexText(r"RIGHT-DOWN-\underline{UNFLIP}", font_size=fs).next_to(image_001, DOWN)
+        text_011 = TexText(r"RIGHT-\underline{UP}-UNFLIP", font_size=fs).next_to(image_011, DOWN)
+        text_111 = TexText(r"\underline{LEFT}-UP-UNFLIP", font_size=fs).next_to(image_111, DOWN)
+        text_100 = TexText(r"LEFT-DOWN-FLIP", font_size=fs).next_to(image_100, DOWN)
+        text_110 = TexText(r"LEFT-\underline{UP}-FLIP", font_size=fs).next_to(image_110, DOWN)
+        text_010 = TexText(r"\underline{RIGHT}-UP-FLIP", font_size=fs).next_to(image_010, DOWN)
+        text_101 = TexText(r"\underline{LEFT}-\underline{DOWN}-\underline{UNFLIP}", font_size=fs).next_to(image_101, DOWN)
+
+        # Animations
+        self.add(image_000, image_001, image_011, image_111, image_100, image_110, image_010, image_101)
+        # for obj, obj2 in zip([image_000, image_001, image_011, image_111, image_100, image_110, image_010, image_101], [text_000, text_001, text_011, text_111; text_100, text_110, text_010, text_101]):
+        #     self.play(FadeIn(obj), FadeIn(obj2))
+        #     self.wait()
+
+        self.embed()
 
 
