@@ -1,5 +1,9 @@
 # from manimlib import *
 from manim import *
+import pandas as pd
+
+dict_color_code = {0: BLACK, 2: BLUE_D, 4: YELLOW_D, 6: PURPLE_D, 8: GREEN_D, 10: PINK,
+                   12: "#40E0D0", 14: "#9932cc", 16: RED_D}
 
 path_resources = "resources/"
 
@@ -72,4 +76,5 @@ class FrontPageThesis(Scene):
         # Animations
         self.add(ls2n_logo_big, ecn_logo)  # adds the objects for front page presentation
         self.add(title_talk, author_title, seminar_title, date)
+
 

@@ -1179,3 +1179,167 @@ class ClassCubePlanar(Scene):
         return Square(side_length=2.3, fill_opacity=0.25, fill_color=BLUE_D, stroke_opacity=0)
 
 
+class JacoFullSlice(Scene):
+
+    def construct(self) -> None:
+        # setting frame for lice presentation
+        # plotting the slice
+        frame = self.camera.frame
+        frame.scale(3)
+
+        df = pd.read_csv("resources/data/jaco_orientation_first.csv")
+        df2 = pd.read_csv("resources/data/jaco_orientation_second.csv")
+        axes_mul = 1.3
+        back_plane = Axes(x_range=(-8, 8, 0.5), y_range=(-8, 8, 0.5), width=16, height=16).shift(UP * 0.5 + RIGHT * 10)
+        back_plane.x_axis.shift(DOWN * 1.85 * axes_mul)
+        x_label2 = TexText("$x$ coord", font_size=30, color=YELLOW_D).next_to(back_plane.x_axis, DOWN * 1.8)
+        y_label2 = TexText("$y$ coord", font_size=30, color=YELLOW_D).next_to(back_plane.y_axis).rotate(
+            np.pi / 2).scale(0.8)
+        back_plane.add(x_label2, y_label2)
+        back_plane.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=1,
+            buffers=[0.2, -0.4]
+        )
+        circle1 = Circle(radius=8, stroke_color=WHITE, stroke_width=1.5).shift(UP * 0.5 + RIGHT * 10)
+
+        # back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
+        group_dot = VGroup()
+        group_dot2 = VGroup()
+        print(f"length of dataframe is {len(df)}")
+        for ii in range(0, len(df)):
+            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+            group_dot.add(
+                Dot(fill_color=dict_color_code[df['iks'][ii]]).scale(0.5).move_to(back_plane.coords_to_point(
+                    df['x'][ii] / 100, df['y'][ii] / 100)))
+
+        # second plot
+        back_plane2 = Axes(x_range=(-8, 8, 0.5), y_range=(-8, 8, 0.5), width=16, height=16).shift(UP * 0.5 + LEFT * 10)
+        back_plane2.x_axis.shift(DOWN * 1.85 * axes_mul)
+        x_label2 = TexText("$x$ coord", font_size=30, color=YELLOW_D).next_to(back_plane2.x_axis, DOWN * 1.8)
+        y_label2 = TexText("$y$ coord", font_size=30, color=YELLOW_D).next_to(back_plane2.y_axis).rotate(
+            np.pi / 2).scale(0.8)
+        back_plane2.add(x_label2, y_label2)
+        back_plane2.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=1,
+            buffers=[0.2, -0.4]
+        )
+
+        circle2 = Circle(radius=8, stroke_color=WHITE, stroke_width=1.5).shift(UP * 0.5 + LEFT * 10)
+
+        # back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
+        group_dot2 = VGroup()
+        print(f"length of dataframe is {len(df)}")
+        for ii in range(0, len(df2)):
+            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+            group_dot2.add(
+                Dot(fill_color=dict_color_code[df2['iks'][ii]]).scale(0.5).move_to(back_plane2.coords_to_point(
+                    df2['x'][ii] / 100, df2['y'][ii] / 100)))
+        self.add(group_dot2, circle2)
+        self.add(group_dot, circle1)
+        self.wait()
+
+        self.embed()
+
+class CRXFullSlice(Scene):
+
+    def construct(self) -> None:
+        # setting frame for lice presentation
+        # plotting the slice
+        frame = self.camera.frame
+        frame.scale(3)
+
+        df = pd.read_csv("resources/data/crx_slice.csv")
+        df2 = pd.read_csv("resources/data/jaco_orientation_first.csv")
+        axes_mul = 1.3
+        back_plane = Axes(x_range=(-14, 14, 0.5), y_range=(-14, 14, 0.5), width=16, height=16).shift(UP * 0.5 + RIGHT * 10)
+        back_plane.x_axis.shift(DOWN * 1.85 * axes_mul)
+        x_label2 = TexText("$x$ coord", font_size=30, color=YELLOW_D).next_to(back_plane.x_axis, DOWN * 1.8)
+        y_label2 = TexText("$y$ coord", font_size=30, color=YELLOW_D).next_to(back_plane.y_axis).rotate(
+            np.pi / 2).scale(0.8)
+        back_plane.add(x_label2, y_label2)
+        back_plane.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=1,
+            buffers=[0.2, -0.4]
+        )
+
+        # back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
+        group_dot = VGroup()
+        print(f"length of dataframe is {len(df)}")
+        for ii in range(0, len(df)):
+            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+            group_dot.add(
+                Dot(fill_color=dict_color_code[df['iks'][ii]]).scale(0.2).move_to(back_plane.coords_to_point(
+                    df['x'][ii] / 100, df['y'][ii] / 100)))
+
+        # second plot
+        back_plane2 = Axes(x_range=(-8, 8, 0.5), y_range=(-8, 8, 0.5), width=16, height=16).shift(UP * 0.5 + LEFT * 10)
+        back_plane2.x_axis.shift(DOWN * 1.85 * axes_mul)
+        x_label2 = TexText("$x$ coord", font_size=30, color=YELLOW_D).next_to(back_plane2.x_axis, DOWN * 1.8)
+        y_label2 = TexText("$y$ coord", font_size=30, color=YELLOW_D).next_to(back_plane2.y_axis).rotate(
+            np.pi / 2).scale(0.8)
+        back_plane2.add(x_label2, y_label2)
+        back_plane2.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=1,
+            buffers=[0.2, -0.4]
+        )
+
+        # back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
+        group_dot2 = VGroup()
+        print(f"length of dataframe is {len(df2)}")
+        for ii in range(0, len(df2)):
+            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+            group_dot2.add(
+                Dot(fill_color=dict_color_code[df2['iks'][ii]]).scale(0.5).move_to(back_plane2.coords_to_point(
+                    df2['x'][ii] / 100, df2['y'][ii] / 100)))
+
+
+        self.play(FadeIn(group_dot), FadeIn(group_dot2))
+        self.wait()
+
+        self.embed()
+
+
+class JacoFullSliceZoom(Scene):
+
+    def construct(self) -> None:
+        # setting frame for lice presentation
+        # plotting the slice
+        frame = self.camera.frame
+        frame.scale(3)
+
+        df = pd.read_csv("resources/data/jaco_orientation_first.csv")
+        axes_mul = 1.3
+        back_plane = Axes(x_range=(-8, 8, 0.5), y_range=(-8, 8, 0.5), width=16, height=16)
+        back_plane.x_axis.shift(DOWN * 1.85 * axes_mul)
+        x_label2 = TexText("$x$ coord", font_size=30, color=YELLOW_D).next_to(back_plane.x_axis, DOWN * 1.8)
+        y_label2 = TexText("$y$ coord", font_size=30, color=YELLOW_D).next_to(back_plane.y_axis).rotate(
+            np.pi / 2).scale(0.8)
+        back_plane.add(x_label2, y_label2)
+        back_plane.add_coordinate_labels(
+            font_size=20,
+            num_decimal_places=1,
+            buffers=[0.2, -0.4]
+        )
+        circle1 = Circle(radius=8, stroke_color=WHITE, stroke_width=1.5)
+
+        # back_plane.shift([-1.7, 0.325, 5.6 + 0.48])
+        group_dot = VGroup()
+        print(f"length of dataframe is {len(df)}")
+        for ii in range(0, len(df)):
+            if ii % 100 == 0: print(f"done adding Dot at index {ii}")
+            group_dot.add(
+                Dot(fill_color=dict_color_code[df['iks'][ii]]).scale(0.5).move_to(back_plane.coords_to_point(
+                    df['x'][ii] / 100, df['y'][ii] / 100)))
+
+        self.add(group_dot, circle1)
+        self.wait(2)
+
+        rect = Square(stroke_color=RED, stroke_width=5, side_length=3.4).shift(LEFT * 2.5)
+        self.play(frame.animate.scale(0.7 / frame.get_scale()).move_to([-1.77, 0.485, 0]))
+        self.play(ShowCreation(rect))
+        self.wait()
+        self.embed()
