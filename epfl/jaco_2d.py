@@ -200,16 +200,13 @@ class Robot2R(Scene):
         # Animations
 
         # self.add(get_background())
-        self.add(dot_js.copy())
-        self.add(plot_joint_space, labels, x_label2, y_label2, dot_js)
+        self.add(link1, link2, joint1, joint2, ee)
+        self.add(plot_joint_space, labels, x_label2, y_label2, dot_js, dot_js.copy())
         self.wait()
         self.play(FadeIn(singularity_curves))
         self.wait()
         self.FadeInFadeOut(singularity_curves_text)
 
-        self.wait()
-        # self.play(*[FadeOut(obj) for obj in [x_label2, y_label2]])
-        self.add(link1, link2, joint1, joint2, ee)
         theta1_mirror, theta2_mirror = self.draw_mirror(point1, point2, ee_point, l1, _add_obj=False)
         self.wait(2)
         self.play(ShowCreation(mirroring_line), run_time=3)
@@ -418,10 +415,10 @@ class ShowEightConfigurations(Scene):
         text_101 = TexText(r"\underline{LEFT}-\underline{DOWN}-\underline{UNFLIP}", font_size=fs).next_to(image_101, DOWN)
 
         # Animations
-        self.add(image_000, image_001, image_011, image_111, image_100, image_110, image_010, image_101)
-        # for obj, obj2 in zip([image_000, image_001, image_011, image_111, image_100, image_110, image_010, image_101], [text_000, text_001, text_011, text_111; text_100, text_110, text_010, text_101]):
-        #     self.play(FadeIn(obj), FadeIn(obj2))
-        #     self.wait()
+        # self.add(image_000, image_001, image_011, image_111, image_100, image_110, image_010, image_101)
+        for obj, obj2 in zip([image_000, image_001, image_011, image_111, image_100, image_110, image_010, image_101], [text_000, text_001, text_011, text_111, text_100, text_110, text_010, text_101]):
+            self.play(FadeIn(obj), FadeIn(obj2))
+            self.wait()
 
         self.embed()
 

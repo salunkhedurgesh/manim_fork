@@ -510,7 +510,7 @@ class JacoNegTraj(ThreeDScene):
 
         point_plot = Dot().move_to(plane_paths.c2p(0, paths2[1][1])).fix_in_frame()
         point_plot2 = Dot().move_to(plane_paths.c2p(0, paths2[3][1])).fix_in_frame()
-        point_plot3 = Dot().move_to(plane_paths.c2p(0, paths2[4][1])).fix_in_frame()
+        point_plot3 = Dot().move_to(plane_paths.c2p(len(paths2[3]) * path_length / 724, paths2[4][1])).fix_in_frame()
 
         t1 = TexText(r"$T_1$", font_size=36).move_to(plane_paths.c2p(7, 3)).fix_in_frame()
         t2 = TexText(r"$T_2$", font_size=36).move_to(plane_paths.c2p(7, 2)).fix_in_frame()
@@ -682,8 +682,31 @@ class TorusTransform(ThreeDScene):
     def construct(self):
         frame = self.camera.frame
         theta, phi, gamma = frame.get_theta(), frame.get_phi(), frame.get_gamma()
-        frame.set_euler_angles(theta=-0.55, phi=0.7, gamma=0)
-        frame.move_to(ORIGIN)
+
+        # plotting the 2D circles
+        # frame.set_euler_angles(theta=PI/2, phi=PI/2, gamma=0)
+
+        circle = Circle(radius=1, stroke_color=WHITE).rotate(angle=PI/2, axis=UP).shift(UP*3)
+        para_circle = ParametricCurve(lambda t: np.array([0, 3 + cos(t), sin(t)]), t_range=(0, TAU, 0.05))
+        para_circle2 = ParametricCurve(lambda t: np.array([cos(t), sin(t) + 2, 0]), t_range=(0, TAU, 0.05))
+        theta3 = TexText(r"$\theta_3$").fix_in_frame()
+        self.add(theta3)
+        theta3.unfix_from_frame()
+        theta3.rotate(axis=OUT, angle=PI / 2, about_point=theta3.get_center())
+        theta3.rotate(axis=UP, angle=PI / 2, about_point=theta3.get_center()).shift(UP * 3.5)
+
+        frame.set_euler_angles(theta=PI / 2, phi=PI / 2, gamma=0)
+        self.play(ShowCreation(para_circle), FadeIn(theta3))
+        self.wait()
+        self.play(frame.animate.set_euler_angles(theta=0, phi=0, gamma=0))
+        theta2 = TexText(r"$\theta_2$").shift(UP * 2 + RIGHT * 1.5).fix_in_frame()
+        self.play(ShowCreation(para_circle2), FadeIn(theta2))
+        theta2.unfix_from_frame()
+        theta3.rotate(axis=IN, angle=PI/2, about_point=theta3.get_center())
+        theta3.shift(LEFT * 0.5)
+        self.play(frame.animate.set_euler_angles(theta=-0.55, phi=0.7, gamma=0).move_to(ORIGIN),
+        theta2.animate.rotate(axis=RIGHT, angle=PI/2, about_point=theta2.get_center()))
+
         axes = ThreeDAxes()
         axes.x_axis.set_color(color=RED_D)
         axes.y_axis.set_color(color=GREEN_D)
@@ -721,6 +744,10 @@ class TorusTransform(ThreeDScene):
             self.play(Transform(torus, new_torus), run_time=0.1)
         self.wait(2)
         self.play(frame.animate.set_euler_angles(theta=theta, phi=phi, gamma=gamma))
+
+        self.remove(para_circle, para_circle2)
+        self.remove(theta3, theta2)
+        # self.embed()
         # self.embed()
 
         # cutting the torus to cylinder
@@ -742,7 +769,7 @@ class TorusTransform(ThreeDScene):
                                                                                            opacity=opacity)
             self.play(*[Transform(obj, obj2) for obj, obj2 in
                         zip([torus, torus_right, torus_left], [new_torus, new_torus_right, new_torus_left])],
-                      run_time=0.1)
+                      run_time=0.05)
 
         cylinder = ParametricSurface(lambda u, v: np.array([u, small_radius * (cos(v) + 1), small_radius * sin(v)]),
                                      u_range=(-PI * big_radius, PI * big_radius), v_range=(0, TAU)).set_color(
@@ -811,7 +838,7 @@ class TorusTransform(ThreeDScene):
             self.play(*[Transform(obj, obj2) for obj, obj2 in
                         zip([cylinder, cylinder_right_cover, cylinder_left_cover, cylinder_top, cylinder_bottom],
                             [new_cylinder, cylinder_right_cover2, cylinder_left_cover2, cylinder_top_cover,
-                             cylinder_bottom_cover])], run_time=0.1)
+                             cylinder_bottom_cover])], run_time=0.05)
 
         plane = ParametricSurface(lambda u, v: np.array([u, small_radius, v]),
                                   u_range=(-PI * big_radius, PI * big_radius),
@@ -821,7 +848,7 @@ class TorusTransform(ThreeDScene):
         line_bottom = Line3D(point_a, point_b, color=RED_D)
         line_top = Line3D(point_c, point_d, color=RED_D)
         self.add(line_top, line_bottom, line_left, line_right)
-        self.remove(cylinder_left_cover, cylinder_right_cover, cylinder_top, cylinder_bottom)
+        self.remove(cylinder_left_cover, cylinder_right_cover, cylinder_top, cylinder_bottom, theta2, theta3)
         self.wait(2)
 
         # Animating camera frame
@@ -1069,22 +1096,22 @@ class ClassCubePlanar(Scene):
 
         # comments
         degenerate_robots = TexText(r"degenerate robots \\ $\det(\mathbf{J}) = 0$", font_size=fs).move_to(square_six.get_center())
-        wrist_partitioned_orth = TexText(r"""\begin{minipage}{2.5 cm}\centering wrist-partitioned robots with orthogonal wrist \end{minipage}""", font_size=fs).move_to(square_one.get_center() + UP * cube_length)
+        wrist_partitioned_orth = TexText(r"""\begin{minipage}{2.5 cm}\centering PUMA type wrist-partitioned robots \end{minipage}""", font_size=fs).move_to(square_one.get_center() + UP * cube_length)
         wrist_partitioned_nonorth = TexText(r"""\begin{minipage}{2.5 cm}\centering wrist-partitioned robots \end{minipage}""", font_size=fs).move_to(square_four.get_corner(DR) + (DOWN * 0.2) * cube_length)
         wrist_partitioned_offset = TexText(r"""\begin{minipage}{2.5 cm}\centering robots with an offset in the wrist \end{minipage}""", font_size=fs).move_to(square_five.get_center() + RIGHT * 1.2 * cube_length)
-        ur5_structure = TexText(r"""\begin{minipage}{2.5 cm}\centering UR5 like robots \end{minipage}""", font_size=fs).move_to(square_two.get_edge_center(UP) + UP * 0.2)
+        ur5_structure = TexText(r"""\begin{minipage}{2.5 cm}\centering UR5 like robots \end{minipage}""", font_size=fs).move_to(square_two.get_edge_center(UP) + DOWN * 0.2)
         jaco_structure = TexText(r"""\begin{minipage}{2 cm}\centering Jaco Gen2 like robots \end{minipage}""", font_size=fs).move_to(dot_jaco.get_center() + LEFT)
 
         # image objects
         image_path = "resources/raster_images/"
         image_kr5 = ImageMobject(image_path + "kuka_kr5.png").to_edge(RIGHT)
-        image_jaco = ImageMobject(image_path + "jaco.png").to_edge(RIGHT)
+        image_jaco = ImageMobject(image_path + "jaco_gen2.png").to_edge(RIGHT)
         image_crx = ImageMobject(image_path + "crx.png").to_edge(RIGHT, buff=LARGE_BUFF)
         image_ur5 = ImageMobject(image_path + "ur5.png").to_edge(RIGHT)
 
         # transformed images
         image_kr52 = image_kr5.copy().move_to(square_one.get_center()).scale(cube_length / image_kr5.get_width())
-        image_ur52 = image_ur5.copy().move_to(square_five.get_center()).scale(cube_length / image_ur5.get_height() / 1.5)
+        image_ur52 = image_ur5.copy().move_to(square_five.get_center()).scale(cube_length / image_ur5.get_height() / 1.3)
         image_crx2 = image_crx.copy().move_to(wrist_partitioned_offset.get_center() + RIGHT * 1.6).scale(cube_length / image_crx.get_height())
         image_jaco2 = image_jaco.copy().move_to(jaco_structure.get_center() + DOWN * 2).scale(cube_length / image_jaco.get_height())
 
@@ -1104,6 +1131,8 @@ class ClassCubePlanar(Scene):
         self.play(FadeIn(wrist_partitioned_orth), FadeIn(image_kr5))
         self.wait()
         self.play(ReplacementTransform(image_kr5, image_kr52))
+        arrow_puma = Arrow(image_kr52.get_center() + (LEFT + UP) * 0.3, dot_orth_wrist, stroke_width=2)
+        self.add(arrow_puma)
         self.wait()
 
         self.play(FadeIn(dot_jaco))
@@ -1112,11 +1141,14 @@ class ClassCubePlanar(Scene):
         self.play(FadeIn(jaco_structure), FadeIn(image_jaco))
         self.wait()
         self.play(ReplacementTransform(image_jaco, image_jaco2))
+        arrow_jaco = Arrow(image_jaco2.get_center() + (RIGHT + UP) * 0.35, dot_jaco, stroke_width=2)
+        self.add(arrow_jaco)
         self.wait()
 
         self.play(FadeIn(wrist_robots_edge_right), FadeIn(wrist_robots_edge_left))
         self.wait()
         self.play(FadeIn(wrist_partitioned_nonorth))
+        self.wait()
 
 
         self.play(FadeIn(offset_edge_up), FadeIn(offset_edge_down))
@@ -1124,6 +1156,11 @@ class ClassCubePlanar(Scene):
         self.play(FadeIn(wrist_partitioned_offset), FadeIn(image_crx))
         self.wait()
         self.play(ReplacementTransform(image_crx, image_crx2))
+        arrow_crx1_a = Line(image_crx2.get_corner(UL) + DOWN, offset_edge_up.get_center() + DOWN, stroke_width=2)
+        arrow_crx1_b = Arrow(arrow_crx1_a.get_end(), offset_edge_up.get_center(), stroke_width=2, buff=0)
+        arrow_crx1 = Group(arrow_crx1_a, arrow_crx1_b)
+        arrow_crx2 = Arrow(image_crx2.get_center(), offset_edge_down.get_center() + RIGHT, stroke_width=2)
+        self.add(arrow_crx1, arrow_crx2)
         self.wait()
 
         self.play(FadeIn(ur5_edge))
@@ -1131,6 +1168,8 @@ class ClassCubePlanar(Scene):
         self.play(FadeIn(ur5_structure), FadeIn(image_ur5))
         self.wait()
         self.play(ReplacementTransform(image_ur5, image_ur52))
+        arrow_ur5 = Arrow(image_ur52.get_center(), ur5_edge.get_center() + DOWN * 0.2, stroke_width=2).shift(RIGHT * 0.2)
+        self.add(arrow_ur5)
         self.wait()
 
         # self.add(wrist_partitioned_orth, wrist_partitioned_nonorth, wrist_partitioned_offset, jaco_structure, ur5_structure)
@@ -1138,3 +1177,5 @@ class ClassCubePlanar(Scene):
 
     def my_square(self):
         return Square(side_length=2.3, fill_opacity=0.25, fill_color=BLUE_D, stroke_opacity=0)
+
+
