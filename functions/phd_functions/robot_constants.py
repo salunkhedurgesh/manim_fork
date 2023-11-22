@@ -17,6 +17,11 @@ def get_dh_parameters(robot: str):
         a_list = [1, 2, 1.5]
         alpha_list = [-PI / 2, PI / 2, 0]
 
+    elif robot == "orthogonal3r":
+        d_list = [1, 1, 0]
+        a_list = [1, 2, 1.5]
+        alpha_list = [-PI / 2, PI / 2, 0]
+
     else:
         raise FileNotFoundError("The robot type is recorded in functions/phd_functions/robot_constants.py")
 

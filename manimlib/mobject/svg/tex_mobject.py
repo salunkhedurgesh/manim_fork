@@ -26,7 +26,7 @@ class Tex(StringMobject):
     def __init__(
         self,
         *tex_strings: str,
-        font_size: int = 48,
+        font_size: int = 36,
         alignment: str = R"\centering",
         template: str = "",
         additional_preamble: str = "",

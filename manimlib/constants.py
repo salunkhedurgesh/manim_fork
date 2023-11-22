@@ -74,6 +74,7 @@ JOINT_TYPE_MAP: dict = {
 
 # Related to Text
 NORMAL: str = "NORMAL"
+LIGHT: str = "LIGHT"
 ITALIC: str = "ITALIC"
 OBLIQUE: str = "OBLIQUE"
 BOLD: str = "BOLD"

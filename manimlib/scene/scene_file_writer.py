@@ -32,7 +32,7 @@ class SceneFileWriter(object):
         self,
         scene: Scene,
         write_to_movie: bool = False,
-        break_into_partial_movies: bool = False,
+        break_into_partial_movies: bool = True,
         save_pngs: bool = False,  # TODO, this currently does nothing
         png_mode: str = "RGBA",
         save_last_frame: bool = False,
@@ -49,6 +49,7 @@ class SceneFileWriter(object):
         progress_description_len: int = 40,
         video_codec: str = "libx264",
         pixel_format: str = "yuv420p",
+        skip_animations: bool = False
     ):
         self.scene: Scene = scene
         self.write_to_movie = write_to_movie
@@ -67,6 +68,7 @@ class SceneFileWriter(object):
         self.progress_description_len = progress_description_len
         self.video_codec = video_codec
         self.pixel_format = pixel_format
+        self.skip_animations = skip_animations
 
         # State during file writing
         self.writing_process: sp.Popen | None = None

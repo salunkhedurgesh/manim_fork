@@ -183,17 +183,18 @@ def get_robot_instance(theta_list, d_list=None, a_list=None, alpha_list=None, of
     for joint_i in joint_collection:
         joint_group.add(joint_i)
 
+    plane = Dot(fill_opacity=0)
     if add_plane:
-        plane = ParametricSurface(lambda u, v: np.array([u, v, 0]), u_range=(-1, 1), v_range=(-1, 1), color=GREY_E).move_to(coord_vec - np.array([0, 0, 0.]))
+        plane = ParametricSurface(lambda u, v: np.array([u, v, 0]), u_range=(-1, 1), v_range=(-1, 1), color=GREY_E).move_to(coord_vec[0] - np.array([0, 0, 2 * joint_radius]))
 
     if show_frame:
         ee_point, ee_R = get_frame_matrix(theta_list, d_list, a_list, alpha_list, len(d_list), offset=offset)
         if adjust_frame:
             ee_R = np.matmul(ee_R, x_rotation_matrix(PI)[0:3, 0:3])
         ee_frame = get_frame(ee_point, ee_R, thickness=0.03, opacity=opacity)
-        return Group(joint_group, link_group, ee_frame, ee)
+        return Group(joint_group, link_group, ee_frame, ee, plane)
     else:
-        return Group(joint_group, link_group, ee)
+        return Group(joint_group, link_group, ee, plane)
 
 
 def get_interpolation(point1, point2, c_iter, total_iter):
@@ -405,6 +406,42 @@ def get_theta_instance(instance, path=None):
 
     return [list(pos_df[pos_df['instance'] == instance]['theta1']), list(neg_df[neg_df['instance'] == instance]['theta1'])]
 
-
-
+def get_path_axis():
+    axes = Axes(
+        # x-axis ranges from -1 to 10, with a default step size of 1
+        x_range=(0, 10),
+        # y-axis ranges from -2 to 2 with a step size of 0.5
+        y_range=(-3, 3),
+        # The axes will be stretched to match the specified
+        # height and width
+        height=4.5,
+        width=7.5,
+        # Axes is made of two NumberLine mobjects.  You can specify
+        # their configuration with axis_config
+        axis_config=dict(
+            stroke_color=GREY_A,
+            stroke_width=2,
+            numbers_to_exclude=[0],
+        ),
+        # Alternatively, you can specify configuration for just one
+        # of them, like this.
+        y_axis_config=dict(
+            numbers_with_elongated_ticks=[-2, 2],
+        ),
+        x_axis_config=dict(
+            include_ticks=False,
+        )
+    )
+    axes.x_axis.shift(DOWN * axes.y_axis.get_length() * 1.05 / 2)
+    axes.shift(LEFT * 2.5)
+    x_label2 = TexText("path", font_size=30, color=YELLOW_D).next_to(axes.x_axis, DOWN * 1.8)
+    y_label2 = TexText("$\\theta_1 (radians)$", font_size=30, color=YELLOW_D).next_to(axes.y_axis).rotate(
+        np.pi / 2).shift(
+        LEFT * 1.5).scale(0.8)
+    axes.add(x_label2, y_label2)
+    axes.add_coordinate_labels(
+        font_size=20,
+        num_decimal_places=1,
+    )
+    return axes
 

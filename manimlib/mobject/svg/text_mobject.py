@@ -11,7 +11,7 @@ import pygments.formatters
 import pygments.lexers
 
 from manimlib.constants import DEFAULT_PIXEL_WIDTH, FRAME_WIDTH
-from manimlib.constants import NORMAL
+from manimlib.constants import NORMAL, LIGHT
 from manimlib.logger import log
 from manimlib.mobject.svg.string_mobject import StringMobject
 from manimlib.utils.customization import get_customization
@@ -73,15 +73,15 @@ class MarkupText(StringMobject):
     def __init__(
         self,
         text: str,
-        font_size: int = 48,
+        font_size: int = 36,
         height: float | None = None,
         justify: bool = False,
         indent: float = 0,
         alignment: str = "",
         line_width: float | None = None,
-        font: str = "",
+        font: str = "sans-serif",
         slant: str = NORMAL,
-        weight: str = NORMAL,
+        weight: str = LIGHT,
         gradient: Iterable[ManimColor] | None = None,
         line_spacing_height: float | None = None,
         text2color: dict = {},
