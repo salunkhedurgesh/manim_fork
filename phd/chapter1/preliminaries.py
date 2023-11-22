@@ -194,8 +194,8 @@ class PseudoSingularity(Scene):
         R = ee[0] ** 2 + ee[1] ** 2 + ee[2] ** 2
 
         # planes for the plots
-        plot_joint_space, box_js = get_small_plot(edge=LEFT, label=True, box_opacity=0.5)
-        plot_work_space, box_ws = get_small_plot(edge=RIGHT, label=True, xvalue=(0, 6), yvalue=(-4, 4), label_list=[r"""$z$""", r"""$\rho$"""], label_position="center")
+        plot_joint_space, box_js = get_small_plot(edge=LEFT, label=True, box_opacity=0.5, buff=2)
+        plot_work_space, box_ws = get_small_plot(edge=RIGHT, label=True, xvalue=(0, 6), yvalue=(-4, 4), label_list=[r"""$z$""", r"""$\rho$"""], label_position="center", buff=2)
 
         # graphs
         critical_points = ImplicitFunction(get_det(robot_type="philippe"), color=BLUE_D, x_range=(-3.2, 3.2),
@@ -919,11 +919,21 @@ class BinaryEllipse(Scene):
         cen_x, cen_y = 0, 0
         circle_ellipse = Circle(stroke_color=PURPLE_D)
         equation_ellipse = ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)
+        text_major_a = Tex("\\norm{major} = ").next_to(circle_ellipse, buff=1)
+        text_major = Tex("1.35").next_to(text_major_a, RIGHT)
+        text_e = Tex("e = 0.866")
+        text_e.next_to(text_major_a, DOWN, buff=0.5).shift(RIGHT * 1.1)
+        value_major = text_major.make_number_changable("1.35")
+        value_e = text_e.make_number_changable("0.866")
+
+        value_major.add_updater(lambda v: v.set_value(major))
+        value_e.add_updater(lambda v: v.set_value(e))
+        self.add(text_major_a, text_major, text_e)
 
         # Animations
         self.add(equation_ellipse, circle_ellipse)
 
-        for ii in np.arange(0.86, 0.1, -0.02):
+        for ii in np.arange(0.86, 0.02, -0.02):
             e = ii
             # equation_ellipse_new = ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)
             self.play(Transform(equation_ellipse, ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)), run_time=0.1)
@@ -934,6 +944,29 @@ class BinaryEllipse(Scene):
             self.play(Transform(equation_ellipse, ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)), run_time=0.1)
             print(ii)
 
+        for ii in np.arange(0.02, 0.98, 0.04):
+            e = ii
+            # equation_ellipse_new = ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)
+            self.play(Transform(equation_ellipse, ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)), run_time=0.1)
+            print(ii)
+
+        for ii in np.arange(0.85, 2, 0.1):
+            major = ii
+            self.play(Transform(equation_ellipse, ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)), run_time=0.1)
+            print(ii)
+
+        step = 0
+        for jj in np.arange(2, 0.6, -0.1):
+            e = 0.98 + step * (0.02 - 0.98)/14
+            step += 1
+            major = jj
+            # equation_ellipse_new = ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)
+            self.play(Transform(equation_ellipse, ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)), run_time=0.05)
+            self.play(Transform(equation_ellipse, ImplicitFunction(lambda c3, s3: ((c3 - cen_x) ** 2 / ((major ** 2) * (1 - e ** 2))) + ((s3 - cen_y) ** 2 / major ** 2) - 1, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2), color=BLUE_D)), run_time=0.05)
+
+            print(ii, jj)
+
+        self.wait()
         self.embed()
 
 
@@ -966,7 +999,9 @@ class BinaryEllipseFigures(Scene):
         value_R = ee_position[0] ** 2 + ee_position[1] ** 2 + ee_position[2] ** 2
         value_z = ee_position[2]
         c3, s3 = var('c3, s3')
+        limit_c = 50
         conic_ellipse = ImplicitFunction(get_conic(value_R, value_z, list_d, list_a, list_alpha), x_range=(-2, 2), y_range=(-2, 2), color=BLUE_D)
+        conic_ellipse_larger = ImplicitFunction(get_conic(value_R, value_z, list_d, list_a, list_alpha), x_range=(-limit_c, limit_c), y_range=(-limit_c, limit_c), color=BLUE_D)
         box_ellipse = Square(side_length=4, stroke_color=WHITE)
         circle_ellipse = Circle(stroke_color=PURPLE_D)
         dots_ellipse = Group()
@@ -995,7 +1030,9 @@ class BinaryEllipseFigures(Scene):
         circle = Circle(radius=1, stroke_color=PURPLE_D)
         dots_js = Group()
 
-        solutions_js = get_ikin(theta_list=[1, 1, 1], d_list=list_d, a_list=list_a, alpha_list=list_alpha)
+        # solutions_js = get_ikin(theta_list=[1, 1, 1], d_list=list_d, a_list=list_a, alpha_list=list_alpha)
+        solutions_js = [[-1.45544820093345, 1.00000000000000, 1.0000000000000002], [-1.91996521980751, 0.612403630843417, -0.76695228827031]]
+
         for ii in solutions_js:
             dots_js.add(Dot(fill_color=PURPLE_D).move_to(plot_joint_space.c2p(ii[1], ii[2])))
 
@@ -1010,10 +1047,15 @@ class BinaryEllipseFigures(Scene):
         self.play(*[FadeIn(obj) for obj in [plot_conic_space, box_cs, conic_ellipse, circle_ellipse, dots_ellipse]])
         self.wait()
         self.play(*[FadeIn(obj) for obj in [plot_work_space, box_ws, critv_img]])
-        self.wait()
+        self.wait(7)
 
+        self.clear()
+        self.add(circle_ellipse, conic_ellipse, conic_ellipse_larger, dots_ellipse)
+        self.play(frame.animate.scale(2.7).shift(RIGHT * 6 + UP * 1.1))
+        self.wait(2)
+        self.play(FadeIn(Text("Ceci n'est pas une cercle !").fix_in_frame().shift(RIGHT * 2)))
+        self.wait(2)
         self.embed()
-
 
 class QuatHyperbolaFigures(Scene):
 
@@ -1046,6 +1088,8 @@ class QuatHyperbolaFigures(Scene):
 
         for ii in real_intersections:
             dots_ellipse.add(Dot().move_to([ii[0], ii[1], 0]))
+        intersection_dot = Dot(fill_color=RED_D)
+        intersection_dot.move_to(LEFT * 0.65 + DOWN * 0.52)
 
         # planes for the plots
         plot_joint_space, box_js = get_small_plot(edge=LEFT, label=True, box_opacity=0.5)
@@ -1080,6 +1124,7 @@ class QuatHyperbolaFigures(Scene):
         self.play(*[FadeIn(obj) for obj in [plot_joint_space, box_js, critical_points, dots_js, caption_ellipse]])
         self.wait()
         self.play(*[FadeIn(obj) for obj in [plot_conic_space, box_cs, conic_ellipse, circle_ellipse, dots_ellipse]])
+        self.add(intersection_dot)
         self.wait()
         self.play(*[FadeIn(obj) for obj in [plot_work_space, box_ws, critical_value]])
         self.wait()
