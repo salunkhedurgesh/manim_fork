@@ -351,7 +351,7 @@ class ExplainingConfiguration(Scene):
 
         self.play(elbow_up.animate.shift(LEFT + UP * 1.1), elbow_down.animate.shift(RIGHT + UP))
         self.wait(2)
-        self.play(elbow_up.copy().scale(0.8).animate.move_to(plot_joint_space.c2p(0, PI / 2)), elbow_down.copy().scale(0.8).animate.move_to(plot_joint_space.c2p(0, -PI / 2)))
+        self.play(elbow_down.copy().scale(0.8).animate.move_to(plot_joint_space.c2p(0, PI / 2)), elbow_up.copy().scale(0.8).animate.move_to(plot_joint_space.c2p(0, -PI / 2)))
         self.wait()
         self.embed()
 

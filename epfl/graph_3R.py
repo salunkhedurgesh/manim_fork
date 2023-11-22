@@ -217,12 +217,11 @@ class PlotSetup(ThreeDScene):
         return real_solutions(solve([conic_eqn, circle_eqn], [c3, s3]))
 
 
-class CuspidalConfig(ThreeDScene):
+class CuspidalConfig(Scene):
     small_plot_size = 4
 
     def construct(self):
         frame = self.camera.frame
-        frame.set_euler_angles(theta=0, phi=0, gamma=0)
         frame.scale(1)
 
         # data for initial start
@@ -260,17 +259,24 @@ class CuspidalConfig(ThreeDScene):
                [1.72565092649699, -0.352336624163169, -2.014417810173952],
                [-1.44839814046463, -3.00000000000000, -0.49999999999999994]]
 
+        A = TexText("A").move_to(plot_joint_space.c2p(-2.9, 0))
+        B_preA = TexText("A").move_to(plot_joint_space.c2p(-0.4, 2.8))
+        B = TexText("B").move_to(plot_joint_space.c2p(-0.4, 2.8))
         start_position = Dot(fill_color=RED_D).move_to(plot_work_space.c2p(rho, z))
 
         for obj in [plot_joint_space, plot_work_space, box_js, box_ws, text_joint_space, text_work_space, critical_points.match_plot(plot_joint_space), critical_value]:
             self.add(obj.fix_in_frame())
 
         dot_wkspc_list = [start_position.copy().fix_in_frame() for _ in iks]
-        dot_jspc_list = [Dot(fill_color=PURPLE_D).move_to(plot_joint_space.c2p(sol[1], sol[2])).fix_in_frame() for sol
+        dot_jspc_list = [Dot(fill_color=PURPLE_D).move_to(plot_joint_space.c2p(sol[1], sol[2])) for sol
                          in iks]
         self.add(work_dot)
-        self.play(*[Transform(obj1, obj2) for obj1, obj2 in zip(dot_wkspc_list, dot_jspc_list)], run_time=1)
-        self.wait(2)
+        self.play(*[Transform(obj1, obj2) for obj1, obj2 in zip(dot_wkspc_list, dot_jspc_list)], run_time=2)
+        self.wait(5)
+        self.play(FadeIn(A), FadeIn(B_preA))
+        self.wait(8)
+        self.play(Transform(B_preA, B))
+        self.wait()
 
         list_new_theta = [-0.5, 1.5]
         # iks = get_ikin(theta_list=list_new_theta)
@@ -288,23 +294,32 @@ class CuspidalConfig(ThreeDScene):
         self.FadeIt(work_dot)
 
         work_dot2 = Dot(fill_color=RED_D).move_to(plot_work_space.c2p(rho, z))
-        dot_wkspc_list2 = [work_dot2.copy().fix_in_frame() for _ in iks]
-        dot_jspc_list2 = [Dot(fill_color=PINK).move_to(plot_joint_space.c2p(sol[1], sol[2])).fix_in_frame() for sol in iks]
+        dot_wkspc_list2 = [work_dot2.copy() for _ in iks]
+        dot_jspc_list2 = [Dot(fill_color=PINK).move_to(plot_joint_space.c2p(sol[1], sol[2])) for sol in iks]
 
         self.add(work_dot2)
         self.play(*[Transform(obj1, obj2) for obj1, obj2 in zip(dot_wkspc_list2, dot_jspc_list2)], run_time=2)
+        self.wait()
 
-
-
-        question = TexText(r"??", font_size=32).fix_in_frame().move_to(plot_joint_space.c2p(0, 1.5))
+        question = TexText(r"??", font_size=32).move_to(plot_joint_space.c2p(0, 1.5))
+        question_side = TexText(r"A or B", font_size=32).next_to(question, RIGHT)
+        C = TexText("C").next_to(question, RIGHT)
         self.wait(2)
         self.play(FadeIn(question))
-        self.wait(2)
+        self.wait(3)
 
         ar1 = Arrow(plot_joint_space.c2p(list_new_theta[0], list_new_theta[1]), plot_joint_space.c2p(-0.74, 2.6), stroke_width=1)
         ar2 = Arrow(plot_joint_space.c2p(list_new_theta[0], list_new_theta[1]), plot_joint_space.c2p(-3, -0.5), stroke_width=1)
 
         self.play(*[ShowCreation(obj) for obj in [ar1, ar2]])
+        self.wait()
+        self.play(FadeIn(question_side))
+        self.wait(10)
+
+        pseudo_singularity = ImplicitFunction(get_ps(), color=RED_D, x_range=(-3.2, 3.2), y_range=(-3.2, 3.2)).match_plot(plot_joint_space).shift(RIGHT * 0.05)
+        self.play(FadeIn(pseudo_singularity))
+        self.wait(7)
+        self.play(Transform(question_side, C))
         self.wait()
 
         self.embed()
